@@ -1,16 +1,31 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import ms from 'ms';
 import { join } from 'path';
-import cookieParser from 'cookie-parser';
+import passport from 'passport';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
-import ms from 'ms';
-import passport from 'passport';
+import { AppModule } from './app.module';
+import cookieParser from 'cookie-parser';
+import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+    app.useGlobalPipes(
+        new ValidationPipe({
+            exceptionFactory: (errors) => {
+                const result = errors.map((error) => ({
+                    property: error.property,
+                    message: error.constraints
+                        ? Object.values(error.constraints)[0]
+                        : 'Lỗi validation',
+                }));
+                return new BadRequestException(result);
+            },
+        }),
+    );
 
     const configService = app.get(ConfigService);
     const port = configService.get<string>('PORT');

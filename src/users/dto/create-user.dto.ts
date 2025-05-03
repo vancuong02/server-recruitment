@@ -7,25 +7,25 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Tên không được để trống' })
+    @IsString({ message: 'Tên phải là chuỗi ký tự' })
     name: string;
 
-    @IsNotEmpty()
-    @IsEmail()
+    @IsNotEmpty({ message: 'Email không được để trống' })
+    @IsEmail({}, { message: 'Email không đúng định dạng' })
     email: string;
 
-    @IsNotEmpty()
-    @IsString()
-    @MinLength(6)
+    @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
+    @IsString({ message: 'Mật khẩu phải là chuỗi ký tự' })
+    @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
     password: string;
 
-    @IsString()
+    @IsString({ message: 'Số điện thoại phải là chuỗi ký tự' })
     phone: string;
 
-    @IsString()
+    @IsString({ message: 'Địa chỉ phải là chuỗi ký tự' })
     address: string;
 
-    @IsNumber()
+    @IsNumber({}, { message: 'Tuổi phải là số' })
     age: number;
 }

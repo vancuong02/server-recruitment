@@ -5,7 +5,7 @@ import { JwtAuthGuard } from './passport/stateless.jwt.auth.guard';
 
 @Controller('stateless')
 export class StatelessController {
-    constructor(private statelessService: StatelessService) { }
+    constructor(private statelessService: StatelessService) {}
     @UseGuards(LocalAuthGuard)
     @Post('login')
     async login(@Request() req) {

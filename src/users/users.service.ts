@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Injectable,
     NotFoundException,
     UnauthorizedException,
@@ -18,31 +19,63 @@ export class UsersService {
         private userModel: Model<User>,
     ) {}
 
-    async create(createUserDto: CreateUserDto) {
-        const salt = genSaltSync(10);
-        const hashPassword = hashSync(createUserDto.password, salt);
+    private async checkUserExists(id: string) {
+        const user = await this.userModel.findById(id);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        } else {
+            return user;
+        }
+    }
 
+    private async checkEmailExists(email: string, excludeUserId?: string) {
+        const query = {
+            email,
+            ...(excludeUserId && { _id: { $ne: excludeUserId } }),
+        };
+        const existingUser = await this.userModel.findOne(query);
+        if (existingUser) {
+            throw new BadRequestException('Email đã tồn tại trong hệ thống');
+        }
+    }
+
+    private async hashPassword(password: string) {
+        const salt = genSaltSync(10);
+        return hashSync(password, salt);
+    }
+
+    async create(createUserDto: CreateUserDto) {
+        // Kiểm tra email tồn tại
+        await this.checkEmailExists(createUserDto.email);
+
+        const hashPassword = await this.hashPassword(createUserDto.password);
         const newUser = new this.userModel({
             ...createUserDto,
             password: hashPassword,
         });
         await newUser.save();
 
+        // Loại bỏ password khi trả về
         const { password, ...user } = newUser.toObject();
         return user;
     }
 
     async update(id: string, updateUserDto: UpdateUserDto) {
+        // Kiểm tra user tồn tại
+        await this.checkUserExists(id);
+
+        if (updateUserDto.email) {
+            await this.checkEmailExists(updateUserDto.email, id);
+        }
+
+        // Cập nhật user
         const updatedUser = await this.userModel.findByIdAndUpdate(
             id,
             updateUserDto,
             { new: true },
         );
 
-        if (!updatedUser) {
-            throw new NotFoundException('User not found');
-        }
-
+        // Loại bỏ password khi trả về
         const { password, ...result } = updatedUser.toObject();
         return result;
     }
@@ -56,22 +89,19 @@ export class UsersService {
     }
 
     async findAll() {
-        return await this.userModel.find({});
+        return await this.userModel.find({}, { password: 0 });
     }
 
     async findByEmail(email: string) {
         return await this.userModel.findOne({ email });
     }
 
-    checkPassword(hash: string, plain: string) {
-        return compareSync(hash, plain);
+    checkPassword(plain: string, hash: string) {
+        return compareSync(plain, hash);
     }
 
     async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
-        const user = await this.userModel.findById(id);
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
+        const user = await this.checkUserExists(id);
 
         // Kiểm tra mật khẩu hiện tại
         const isValidPassword = compareSync(

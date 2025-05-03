@@ -10,24 +10,24 @@ import { JwtStrategy } from './passport/stateless.jwt.strategy';
 
 import ms from 'ms';
 @Module({
-  controllers: [StatelessController],
-  providers: [StatelessService, LocalStrategy, JwtStrategy],
-  imports: [UsersModule,
-    PassportModule,
-    // JwtModule.({
-    //   secret: jwtConstants.secret,
-    //   signOptions: { expiresIn: '60s' },
-    // }),
-    JwtModule.registerAsync({
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: ms(configService.get<string>("JWT_EXPIRED_IN")),
-        },
-      }),
-      inject: [ConfigService],
-    }),
-
-  ]
+    controllers: [StatelessController],
+    providers: [StatelessService, LocalStrategy, JwtStrategy],
+    imports: [
+        UsersModule,
+        PassportModule,
+        // JwtModule.({
+        //   secret: jwtConstants.secret,
+        //   signOptions: { expiresIn: '60s' },
+        // }),
+        JwtModule.registerAsync({
+            useFactory: async (configService: ConfigService) => ({
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: {
+                    expiresIn: ms(configService.get<string>('JWT_EXPIRED_IN')),
+                },
+            }),
+            inject: [ConfigService],
+        }),
+    ],
 })
-export class StatelessModule { }
+export class StatelessModule {}
