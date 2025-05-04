@@ -50,9 +50,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
         // Kiểm tra user tồn tại
         if (!user) {
-            throw new UnauthorizedException(
-                'Token không hợp lệ hoặc đã hết hạn',
-            );
+            throw new UnauthorizedException('Người dùng không tồn tại');
         }
 
         return user;
