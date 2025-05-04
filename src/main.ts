@@ -5,13 +5,17 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+    const reflector = app.get(Reflector);
+    app.useGlobalGuards(new JwtAuthGuard(reflector));
 
     app.useGlobalPipes(
         new ValidationPipe({
@@ -32,8 +36,6 @@ async function bootstrap() {
 
     //config view engine
     app.useStaticAssets(join(__dirname, '..', 'src/public'));
-    app.setBaseViewsDir(join(__dirname, '..', 'src/views'));
-    app.setViewEngine('ejs');
 
     //config cookies
     app.use(cookieParser());

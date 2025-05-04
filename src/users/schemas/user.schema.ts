@@ -17,13 +17,28 @@ export class User {
     password: string;
 
     @Prop()
-    phone: string;
-
-    @Prop()
-    address: string;
-
-    @Prop()
     age: number;
+
+    @Prop()
+    gender: string;
+
+    @Prop({ type: { _id: String, name: String } })
+    company: {
+        _id: string;
+        name: string;
+    };
+
+    @Prop()
+    role: string;
+
+    @Prop()
+    refreshToken: string;
+
+    @Prop()
+    isDeleted: boolean;
+
+    @Prop()
+    deletedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

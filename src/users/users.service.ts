@@ -1,22 +1,23 @@
 import {
-    BadRequestException,
     Injectable,
     NotFoundException,
+    BadRequestException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User, UserDocument } from './schemas/user.schema';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel(User.name)
-        private userModel: Model<User>,
+        private userModel: SoftDeleteModel<UserDocument>,
     ) {}
 
     private async checkUserExists(id: string) {
@@ -81,7 +82,7 @@ export class UsersService {
     }
 
     async remove(id: string) {
-        const deletedUser = await this.userModel.findByIdAndDelete(id);
+        const deletedUser = await this.userModel.softDelete({ _id: id });
         if (!deletedUser) {
             throw new NotFoundException('User not found');
         }
