@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { IUser } from './users.interface';
 
 @Injectable()
 export class UsersService {
@@ -58,7 +59,10 @@ export class UsersService {
 
         // Loại bỏ password khi trả về
         const { password, ...user } = newUser.toObject();
-        return user;
+        return {
+            message: 'Tạo người dùng thành công',
+            data: user,
+        };
     }
 
     async update(id: string, updateUserDto: UpdateUserDto) {
@@ -77,8 +81,11 @@ export class UsersService {
         );
 
         // Loại bỏ password khi trả về
-        const { password, ...result } = updatedUser.toObject();
-        return result;
+        const { password, ...user } = updatedUser.toObject();
+        return {
+            message: 'Cập nhật người dùng thành công',
+            data: user,
+        };
     }
 
     async remove(id: string) {
@@ -86,15 +93,37 @@ export class UsersService {
         if (!deletedUser) {
             throw new NotFoundException('User not found');
         }
-        return { message: 'User deleted successfully' };
+        return { message: 'Xóa người dùng thành công' };
     }
 
-    async findAll() {
-        return await this.userModel.find({}, { password: 0 });
+    async findAll(current: number, pageSize: number) {
+        const defaultCurrent = current ? current : 1;
+        const defaultPageSize = pageSize ? pageSize : 10;
+        const skip = (defaultCurrent - 1) * defaultPageSize;
+
+        const [items, totalItems] = await Promise.all([
+            this.userModel.find().skip(skip).limit(defaultPageSize),
+            this.userModel.countDocuments(),
+        ]);
+
+        return {
+            message: 'Lấy danh sách người dùng thành công',
+            meta: {
+                currentPage: defaultCurrent,
+                pageSize: defaultPageSize,
+                totalPages: Math.ceil(totalItems / defaultPageSize),
+                totalItems,
+            },
+            data: items,
+        };
     }
 
     async findByEmail(email: string) {
-        return await this.userModel.findOne({ email });
+        const user = await this.userModel.findOne({ email });
+        return {
+            message: 'Lấy thông tin người dùng thành công',
+            data: user,
+        };
     }
 
     checkPassword(plain: string, hash: string) {
@@ -121,6 +150,6 @@ export class UsersService {
         user.password = hashPassword;
         await user.save();
 
-        return { message: 'Password changed successfully' };
+        return { message: 'Thay đổi mật khẩu thành công' };
     }
 }

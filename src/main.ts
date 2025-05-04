@@ -1,22 +1,32 @@
 import ms from 'ms';
-import { join } from 'path';
+import {
+    ValidationPipe,
+    VersioningType,
+    BadRequestException,
+} from '@nestjs/common';
 import passport from 'passport';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
-import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
-import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+
+import { AppModule } from './app.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { TransformInterceptor } from './core/transform.interceptor';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+    // Config Guard
     const reflector = app.get(Reflector);
     app.useGlobalGuards(new JwtAuthGuard(reflector));
 
+    // Config interceptor
+    app.useGlobalInterceptors(new TransformInterceptor());
+
+    // Config Validation
     app.useGlobalPipes(
         new ValidationPipe({
             exceptionFactory: (errors) => {
@@ -33,9 +43,6 @@ async function bootstrap() {
 
     const configService = app.get(ConfigService);
     const port = configService.get<string>('PORT');
-
-    //config view engine
-    app.useStaticAssets(join(__dirname, '..', 'src/public'));
 
     //config cookies
     app.use(cookieParser());
@@ -64,6 +71,12 @@ async function bootstrap() {
         origin: '*',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
+    });
+
+    app.setGlobalPrefix('api');
+    app.enableVersioning({
+        type: VersioningType.URI,
+        defaultVersion: ['1', '2'],
     });
 
     await app.listen(port);

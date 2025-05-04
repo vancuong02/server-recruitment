@@ -1,13 +1,16 @@
 import {
-    Controller,
     Get,
     Post,
     Body,
     Patch,
     Param,
     Delete,
+    Controller,
+    Query,
 } from '@nestjs/common';
+import { IUser } from './users.interface';
 import { UsersService } from './users.service';
+import { User } from '@/decorator/user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -31,9 +34,17 @@ export class UsersController {
         return this.usersService.remove(id);
     }
 
+    @Get('profile')
+    getProfile(@User() user: IUser) {
+        return user;
+    }
+
     @Get()
-    findAll() {
-        return this.usersService.findAll();
+    findAll(
+        @Query('current') current: string,
+        @Query('pageSize') pageSize: string,
+    ) {
+        return this.usersService.findAll(+current, +pageSize);
     }
 
     @Get(':email')

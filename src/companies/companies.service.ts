@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 
+import { IUser } from '@/users/users.interface';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { Company, CompanyDocument } from './schemas/company.schema';
@@ -13,12 +14,17 @@ export class CompaniesService {
         private companyModel: SoftDeleteModel<CompanyDocument>,
     ) {}
 
-    async create(createCompanyDto: CreateCompanyDto) {
-        const newCompany = new this.companyModel(createCompanyDto);
-        await newCompany.save();
+    async create(createCompanyDto: CreateCompanyDto, user: IUser) {
+        const company = await this.companyModel.create({
+            ...createCompanyDto,
+            createdBy: {
+                _id: user._id,
+                email: user.email,
+            },
+        });
         return {
             message: 'Tạo công ty thành công',
-            data: newCompany,
+            data: company,
         };
     }
 
@@ -29,12 +35,44 @@ export class CompaniesService {
         };
     }
 
-    async findAll() {
-        return await this.companyModel.find();
+    async findAll(current: number, pageSize: number, name?: string) {
+        const defaultCurrent = current ? current : 1;
+        const defaultPageSize = pageSize ? pageSize : 10;
+
+        const skip = (defaultCurrent - 1) * defaultPageSize;
+
+        const condition = {};
+        if (name) {
+            condition['name'] = { $regex: new RegExp(name, 'i') };
+        }
+
+        const [items, totalItems] = await Promise.all([
+            this.companyModel
+                .find(condition)
+                .skip(skip)
+                .limit(defaultPageSize)
+                .exec(),
+            this.companyModel.countDocuments(condition),
+        ]);
+
+        return {
+            message: 'Lấy danh sách công ty thành công',
+            meta: {
+                currentPage: defaultCurrent,
+                pageSize: defaultPageSize,
+                totalPages: Math.ceil(totalItems / defaultPageSize),
+                totalItems,
+            },
+            data: items,
+        };
     }
 
     async findOne(id: string) {
-        return await this.companyModel.findOne({ _id: id });
+        const company = await this.companyModel.findOne({ _id: id });
+        return {
+            message: 'Lấy chi tiết công ty thành công',
+            data: company,
+        };
     }
 
     async remove(id: string) {

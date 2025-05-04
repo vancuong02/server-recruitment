@@ -22,7 +22,7 @@ export class User {
     @Prop()
     gender: string;
 
-    @Prop({ type: { _id: String, name: String } })
+    @Prop({ type: Object })
     company: {
         _id: string;
         name: string;
