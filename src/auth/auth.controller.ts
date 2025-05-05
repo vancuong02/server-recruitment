@@ -1,7 +1,8 @@
-import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { Public, ResponseMessage } from '@/decorator/customize.decorator';
+import { CreateUserDto } from '@/users/dto/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,5 +14,12 @@ export class AuthController {
     @Post('/login')
     async handleLogin(@Request() req) {
         return await this.authService.login(req.user['_doc']);
+    }
+
+    @Public()
+    @Post('register')
+    @ResponseMessage('Đăng ký thành công')
+    async handleRegister(@Body() body: CreateUserDto) {
+        return await this.authService.register(body);
     }
 }

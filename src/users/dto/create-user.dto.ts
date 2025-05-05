@@ -1,28 +1,25 @@
-import { Type } from 'class-transformer';
 import {
-    IsBoolean,
-    IsDate,
-    IsEmail,
     IsIn,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
+    IsEmail,
+    IsObject,
     MinLength,
+    IsNotEmpty,
     ValidateNested,
+    IsNotEmptyObject,
 } from 'class-validator';
+import mongoose from 'mongoose';
+import { Type } from 'class-transformer';
 
 class CompanyDto {
-    @IsString({ message: 'ID công ty phải là chuỗi ký tự' })
-    _id: string;
+    @IsNotEmpty({ message: 'ID công ty không được để trống' })
+    _id: mongoose.Schema.Types.ObjectId;
 
-    @IsString({ message: 'Tên công ty phải là chuỗi ký tự' })
+    @IsNotEmpty({ message: 'Tên công ty không được để trống' })
     name: string;
 }
 
 export class CreateUserDto {
     @IsNotEmpty({ message: 'Tên không được để trống' })
-    @IsString({ message: 'Tên phải là chuỗi ký tự' })
     name: string;
 
     @IsNotEmpty({ message: 'Email không được để trống' })
@@ -30,38 +27,45 @@ export class CreateUserDto {
     email: string;
 
     @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
-    @IsString({ message: 'Mật khẩu phải là chuỗi ký tự' })
     @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
     password: string;
 
-    @IsOptional()
-    @IsNumber({}, { message: 'Tuổi phải là số' })
+    @IsNotEmpty({ message: 'Tuổi không được để trống' })
     age: number;
 
-    @IsOptional()
-    @IsString({ message: 'Giới tính phải là chuỗi ký tự' })
-    @IsIn(['male', 'female', 'other'], { message: 'Giới tính không hợp lệ' })
+    @IsNotEmpty({ message: 'Giới tính không được để trống' })
+    @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
     gender: string;
 
-    @IsOptional()
+    role = 'USER';
+}
+
+export class AdminCreateUserDto {
+    @IsNotEmpty({ message: 'Tên không được để trống' })
+    name: string;
+
+    @IsNotEmpty({ message: 'Email không được để trống' })
+    @IsEmail({}, { message: 'Email không đúng định dạng' })
+    email: string;
+
+    @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
+    @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+    password: string;
+
+    @IsNotEmpty({ message: 'Tuổi không được để trống' })
+    age: number;
+
+    @IsNotEmpty({ message: 'Giới tính không được để trống' })
+    @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
+    gender: string;
+
+    @IsNotEmpty({ message: 'Vai trò không được để trống' })
+    @IsIn(['ADMIN', 'USER', 'HR'], { message: 'Vai trò không hợp lệ' })
+    role: string;
+
+    @IsNotEmptyObject()
+    @IsObject()
     @ValidateNested()
     @Type(() => CompanyDto)
-    company?: CompanyDto;
-
-    @IsOptional()
-    @IsString({ message: 'Vai trò phải là chuỗi ký tự' })
-    @IsIn(['admin', 'user', 'hr'], { message: 'Vai trò không hợp lệ' })
-    role = 'user';
-
-    @IsOptional()
-    @IsString({ message: 'Refresh token phải là chuỗi ký tự' })
-    refreshToken?: string;
-
-    @IsOptional()
-    @IsBoolean({ message: 'isDeleted phải là boolean' })
-    isDeleted?: boolean;
-
-    @IsOptional()
-    @IsDate({ message: 'Ngày xóa phải là kiểu Date' })
-    deletedAt?: Date;
+    company: CompanyDto;
 }

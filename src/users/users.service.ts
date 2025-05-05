@@ -8,10 +8,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { IUser } from './users.interface';
 import { User, UserDocument } from './schemas/user.schema';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
+import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -23,7 +24,9 @@ export class UsersService {
     private async checkUserExists(id: string) {
         const user = await this.userModel.findById(id);
         if (!user) {
-            throw new NotFoundException('User not found');
+            throw new NotFoundException(
+                'Người dùng không tồn tại trong hệ thống',
+            );
         } else {
             return user;
         }
@@ -40,77 +43,144 @@ export class UsersService {
         }
     }
 
-    private async hashPassword(password: string) {
+    private hashPassword(password: string) {
         const salt = genSaltSync(10);
         return hashSync(password, salt);
     }
 
     async create(createUserDto: CreateUserDto) {
-        // Kiểm tra email tồn tại
         await this.checkEmailExists(createUserDto.email);
-
-        const hashPassword = await this.hashPassword(createUserDto.password);
-        const newUser = new this.userModel({
+        const hashPassword = this.hashPassword(createUserDto.password);
+        const userData = {
             ...createUserDto,
             password: hashPassword,
-        });
+        };
+        const newUser = new this.userModel(userData);
         await newUser.save();
 
-        // Loại bỏ password khi trả về
-        const { password, ...user } = newUser.toObject();
-        return user;
+        return {
+            _id: newUser._id,
+            name: newUser.name,
+            email: newUser.email,
+            role: newUser.role,
+        };
     }
 
-    async update(id: string, updateUserDto: UpdateUserDto) {
-        // Kiểm tra user tồn tại
+    async adminCreateUser(createUserDto: AdminCreateUserDto, user: IUser) {
+        await this.checkEmailExists(createUserDto.email);
+        const hashPassword = this.hashPassword(createUserDto.password);
+        const userData = {
+            ...createUserDto,
+            password: hashPassword,
+            createdBy: {
+                _id: user._id,
+                email: user.email,
+            },
+        };
+        const newUser = new this.userModel(userData);
+        await newUser.save();
+
+        return {
+            _id: newUser._id,
+            createdAt: newUser.createdAt,
+        };
+    }
+
+    async updateProfile(id: string, updateUserDto: UpdateUserDto, user: IUser) {
         await this.checkUserExists(id);
-
-        if (updateUserDto.email) {
-            await this.checkEmailExists(updateUserDto.email, id);
-        }
-
-        // Cập nhật user
         const updatedUser = await this.userModel.findByIdAndUpdate(
             id,
-            updateUserDto,
+            {
+                ...updateUserDto,
+                updatedBy: {
+                    _id: user._id,
+                    email: user.email,
+                },
+            },
             { new: true },
         );
 
-        // Loại bỏ password khi trả về
-        const { password, ...user } = updatedUser.toObject();
-        return user;
+        return {
+            _id: updatedUser._id,
+            updatedAt: updatedUser.updatedAt,
+        };
     }
 
-    async remove(id: string) {
-        const deletedUser = await this.userModel.softDelete({ _id: id });
-        if (!deletedUser) {
-            throw new NotFoundException('User not found');
+    async adminUpdate(
+        id: string,
+        updateUserDto: AdminUpdateUserDto,
+        user: IUser,
+    ) {
+        await this.checkUserExists(id);
+        if (updateUserDto.email) {
+            await this.checkEmailExists(updateUserDto.email, id);
         }
+        const updatedUser = await this.userModel.findByIdAndUpdate(
+            id,
+            {
+                ...updateUserDto,
+                updatedBy: {
+                    _id: user._id,
+                    email: user.email,
+                },
+            },
+            { new: true },
+        );
+
+        return {
+            _id: updatedUser._id,
+            updatedAt: updatedUser.updatedAt,
+        };
     }
 
-    async findAll(current: number, pageSize: number) {
-        const defaultCurrent = current ? current : 1;
+    async remove(id: string, user: IUser) {
+        await this.checkUserExists(id);
+
+        await this.userModel.findByIdAndUpdate(
+            id,
+            {
+                deletedBy: {
+                    _id: user._id,
+                    email: user.email,
+                },
+            },
+            { new: true },
+        );
+
+        await this.userModel.softDelete({ _id: id });
+    }
+
+    async findAll(page: number, pageSize: number) {
+        const defaultPage = page ? page : 1;
         const defaultPageSize = pageSize ? pageSize : 10;
-        const skip = (defaultCurrent - 1) * defaultPageSize;
+        const skip = (defaultPage - 1) * defaultPageSize;
 
         const [items, totalItems] = await Promise.all([
-            this.userModel.find().skip(skip).limit(defaultPageSize),
+            this.userModel
+                .find({}, { password: 0 })
+                .skip(skip)
+                .limit(defaultPageSize),
             this.userModel.countDocuments(),
         ]);
 
         return {
             meta: {
-                currentPage: defaultCurrent,
+                currentPage: defaultPage,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,
             },
-            data: items,
+            result: items,
         };
     }
 
     async findByEmail(email: string) {
-        const user = await this.userModel.findOne({ email });
+        const user = await this.userModel.findOne({ email }, { password: 0 });
+        if (!user) {
+            throw new NotFoundException(
+                'Người dùng không tồn tại trong hệ thống',
+            );
+        }
         return user;
     }
 
@@ -120,21 +190,14 @@ export class UsersService {
 
     async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
         const user = await this.checkUserExists(id);
-
-        // Kiểm tra mật khẩu hiện tại
         const isValidPassword = compareSync(
             changePasswordDto.currentPassword,
             user.password,
         );
         if (!isValidPassword) {
-            throw new UnauthorizedException('Current password is incorrect');
+            throw new UnauthorizedException('Mật khẩu hiện tại không đúng');
         }
-
-        // Hash mật khẩu mới
-        const salt = genSaltSync(10);
-        const hashPassword = hashSync(changePasswordDto.newPassword, salt);
-
-        // Cập nhật mật khẩu mới
+        const hashPassword = this.hashPassword(changePasswordDto.newPassword);
         user.password = hashPassword;
         await user.save();
     }

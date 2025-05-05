@@ -11,8 +11,8 @@ import {
 import { IUser } from './users.interface';
 import { UsersService } from './users.service';
 import { User } from '@/decorator/user.decorator';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { AdminCreateUserDto } from './dto/create-user.dto';
+import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResponseMessage } from '@/decorator/customize.decorator';
 
@@ -22,20 +22,24 @@ export class UsersController {
 
     @Post()
     @ResponseMessage('Tạo người dùng thành công')
-    create(@Body() createUserDto: CreateUserDto) {
-        return this.usersService.create(createUserDto);
+    create(@Body() createUserDto: AdminCreateUserDto, @User() user: IUser) {
+        return this.usersService.adminCreateUser(createUserDto, user);
     }
 
     @Patch(':id')
     @ResponseMessage('Cập nhật người dùng thành công')
-    update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        return this.usersService.update(id, updateUserDto);
+    update(
+        @Param('id') id: string,
+        @Body() updateUserDto: AdminUpdateUserDto,
+        @User() user: IUser,
+    ) {
+        return this.usersService.adminUpdate(id, updateUserDto, user);
     }
 
     @Delete(':id')
     @ResponseMessage('Xóa người dùng thành công')
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(id);
+    remove(@Param('id') id: string, @User() user: IUser) {
+        return this.usersService.remove(id, user);
     }
 
     @Get('profile')
@@ -43,13 +47,19 @@ export class UsersController {
         return user;
     }
 
+    @Patch('profile')
+    updateProfile(
+        @Param('id') id: string,
+        @Body() updateUserDto: UpdateUserDto,
+        @User() user: IUser,
+    ) {
+        return this.usersService.updateProfile(id, updateUserDto, user);
+    }
+
     @Get()
     @ResponseMessage('Lấy danh sách người dùng thành công')
-    findAll(
-        @Query('current') current: string,
-        @Query('pageSize') pageSize: string,
-    ) {
-        return this.usersService.findAll(+current, +pageSize);
+    findAll(@Query('page') page: string, @Query('pageSize') pageSize: string) {
+        return this.usersService.findAll(+page, +pageSize);
     }
 
     @Get(':email')

@@ -32,10 +32,10 @@ export class CompaniesController {
     @ResponseMessage('Lấy danh sách công ty thành công')
     findAll(
         @Query('name') name: string,
-        @Query('current') current: string,
+        @Query('page') page: string,
         @Query('pageSize') pageSize: string,
     ) {
-        return this.companiesService.findAll(+current, +pageSize, name);
+        return this.companiesService.findAll(+page, +pageSize, name);
     }
 
     @Get(':id')
