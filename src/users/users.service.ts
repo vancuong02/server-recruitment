@@ -9,20 +9,23 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 
 import { IUser } from './users.interface';
-import { User, UserDocument } from './schemas/user.schema';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { User as UserModel, UserDocument } from './schemas/user.schema';
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel(User.name)
+        @InjectModel(UserModel.name)
         private userModel: SoftDeleteModel<UserDocument>,
     ) {}
 
-    private async checkUserExists(id: string) {
-        const user = await this.userModel.findById(id);
+    private async checkUserExists(id: string, hiddenPassword?: boolean) {
+        const user = await this.userModel.findById(id, {
+            password: hiddenPassword ? 0 : 1,
+        });
         if (!user) {
             throw new NotFoundException(
                 'Người dùng không tồn tại trong hệ thống',
@@ -53,6 +56,7 @@ export class UsersService {
         const hashPassword = this.hashPassword(createUserDto.password);
         const userData = {
             ...createUserDto,
+            role: 'user',
             password: hashPassword,
         };
         const newUser = new this.userModel(userData);
@@ -175,13 +179,17 @@ export class UsersService {
     }
 
     async findByEmail(email: string) {
-        const user = await this.userModel.findOne({ email }, { password: 0 });
+        const user = await this.userModel.findOne({ email });
         if (!user) {
             throw new NotFoundException(
                 'Người dùng không tồn tại trong hệ thống',
             );
         }
         return user;
+    }
+
+    async findById(id: string) {
+        return await this.checkUserExists(id, true);
     }
 
     checkPassword(plain: string, hash: string) {
@@ -200,5 +208,9 @@ export class UsersService {
         const hashPassword = this.hashPassword(changePasswordDto.newPassword);
         user.password = hashPassword;
         await user.save();
+    }
+
+    async updateTokenUser(_id: Types.ObjectId, refreshToken: string) {
+        return await this.userModel.updateOne({ _id }, { refreshToken });
     }
 }

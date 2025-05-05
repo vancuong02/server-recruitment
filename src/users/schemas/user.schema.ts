@@ -20,6 +20,9 @@ export class User {
     age: number;
 
     @Prop()
+    address: string;
+
+    @Prop()
     gender: string;
 
     @Prop({ type: Object })

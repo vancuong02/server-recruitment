@@ -34,10 +34,11 @@ export class CreateUserDto {
     age: number;
 
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
-    @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
+    @IsIn(['male', 'female', 'other'], { message: 'Giới tính không hợp lệ' })
     gender: string;
 
-    role = 'USER';
+    @IsNotEmpty({ message: 'Vai trò không được để trống' })
+    role: string;
 }
 
 export class AdminCreateUserDto {
@@ -55,12 +56,15 @@ export class AdminCreateUserDto {
     @IsNotEmpty({ message: 'Tuổi không được để trống' })
     age: number;
 
+    @IsNotEmpty({ message: 'Địa chỉ không được để trống' })
+    address: string;
+
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
-    @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
+    @IsIn(['male', 'female', 'other'], { message: 'Giới tính không hợp lệ' })
     gender: string;
 
     @IsNotEmpty({ message: 'Vai trò không được để trống' })
-    @IsIn(['ADMIN', 'USER', 'HR'], { message: 'Vai trò không hợp lệ' })
+    @IsIn(['admin', 'user', 'hr'], { message: 'Vai trò không hợp lệ' })
     role: string;
 
     @IsNotEmptyObject()
