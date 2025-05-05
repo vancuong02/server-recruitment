@@ -24,7 +24,7 @@ async function bootstrap() {
     app.useGlobalGuards(new JwtAuthGuard(reflector));
 
     // Config interceptor
-    app.useGlobalInterceptors(new TransformInterceptor());
+    app.useGlobalInterceptors(new TransformInterceptor(reflector));
 
     // Config Validation
     app.useGlobalPipes(
@@ -68,7 +68,7 @@ async function bootstrap() {
 
     // Config CORS
     app.enableCors({
-        origin: '*',
+        origin: 'http://localhost:3000',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
     });

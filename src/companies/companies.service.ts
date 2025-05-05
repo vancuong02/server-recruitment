@@ -22,17 +22,11 @@ export class CompaniesService {
                 email: user.email,
             },
         });
-        return {
-            message: 'Tạo công ty thành công',
-            data: company,
-        };
+        return company;
     }
 
     async update(id: string, updateCompanyDto: UpdateCompanyDto) {
         await this.companyModel.updateOne({ _id: id }, updateCompanyDto);
-        return {
-            message: 'Cập nhật công ty thành công',
-        };
     }
 
     async findAll(current: number, pageSize: number, name?: string) {
@@ -56,7 +50,6 @@ export class CompaniesService {
         ]);
 
         return {
-            message: 'Lấy danh sách công ty thành công',
             meta: {
                 currentPage: defaultCurrent,
                 pageSize: defaultPageSize,
@@ -68,17 +61,10 @@ export class CompaniesService {
     }
 
     async findOne(id: string) {
-        const company = await this.companyModel.findOne({ _id: id });
-        return {
-            message: 'Lấy chi tiết công ty thành công',
-            data: company,
-        };
+        return await this.companyModel.findOne({ _id: id });
     }
 
     async remove(id: string) {
         await this.companyModel.softDelete({ _id: id });
-        return {
-            message: 'Xóa công ty thành công',
-        };
     }
 }

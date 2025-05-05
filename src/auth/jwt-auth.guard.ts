@@ -1,4 +1,4 @@
-import { IS_PUBLIC_KEY } from '@/decorator/public.decorator';
+import { IS_PUBLIC_KEY } from '@/decorator/customize.decorator';
 import {
     Injectable,
     ExecutionContext,

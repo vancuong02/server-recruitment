@@ -12,7 +12,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { IUser } from './users.interface';
 
 @Injectable()
 export class UsersService {
@@ -59,10 +58,7 @@ export class UsersService {
 
         // Loại bỏ password khi trả về
         const { password, ...user } = newUser.toObject();
-        return {
-            message: 'Tạo người dùng thành công',
-            data: user,
-        };
+        return user;
     }
 
     async update(id: string, updateUserDto: UpdateUserDto) {
@@ -82,10 +78,7 @@ export class UsersService {
 
         // Loại bỏ password khi trả về
         const { password, ...user } = updatedUser.toObject();
-        return {
-            message: 'Cập nhật người dùng thành công',
-            data: user,
-        };
+        return user;
     }
 
     async remove(id: string) {
@@ -93,7 +86,6 @@ export class UsersService {
         if (!deletedUser) {
             throw new NotFoundException('User not found');
         }
-        return { message: 'Xóa người dùng thành công' };
     }
 
     async findAll(current: number, pageSize: number) {
@@ -107,7 +99,6 @@ export class UsersService {
         ]);
 
         return {
-            message: 'Lấy danh sách người dùng thành công',
             meta: {
                 currentPage: defaultCurrent,
                 pageSize: defaultPageSize,
@@ -120,10 +111,7 @@ export class UsersService {
 
     async findByEmail(email: string) {
         const user = await this.userModel.findOne({ email });
-        return {
-            message: 'Lấy thông tin người dùng thành công',
-            data: user,
-        };
+        return user;
     }
 
     checkPassword(plain: string, hash: string) {
@@ -149,7 +137,5 @@ export class UsersService {
         // Cập nhật mật khẩu mới
         user.password = hashPassword;
         await user.save();
-
-        return { message: 'Thay đổi mật khẩu thành công' };
     }
 }
