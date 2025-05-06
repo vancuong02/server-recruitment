@@ -102,4 +102,9 @@ export class AuthService {
         const newUser = await this.usersService.create(body);
         return this.generateTokens(newUser, response);
     }
+
+    async logout(user: IUser, response: Response) {
+        response.clearCookie('refresh_token');
+        await this.usersService.logout(user._id);
+    }
 }

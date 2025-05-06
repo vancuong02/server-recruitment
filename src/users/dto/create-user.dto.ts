@@ -10,7 +10,7 @@ import {
 import mongoose from 'mongoose';
 import { Type } from 'class-transformer';
 
-class CompanyDto {
+export class CompanyDto {
     @IsNotEmpty({ message: 'ID công ty không được để trống' })
     _id: mongoose.Schema.Types.ObjectId;
 

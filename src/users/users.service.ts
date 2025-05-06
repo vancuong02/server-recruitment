@@ -4,6 +4,7 @@ import {
     BadRequestException,
     UnauthorizedException,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
@@ -13,7 +14,6 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { User as UserModel, UserDocument } from './schemas/user.schema';
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -212,5 +212,9 @@ export class UsersService {
 
     async updateTokenUser(_id: Types.ObjectId, refreshToken: string) {
         return await this.userModel.updateOne({ _id }, { refreshToken });
+    }
+
+    async logout(_id: Types.ObjectId) {
+        return await this.userModel.updateOne({ _id }, { refreshToken: null });
     }
 }

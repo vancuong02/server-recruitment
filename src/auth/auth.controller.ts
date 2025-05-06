@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+
 import { AuthService } from './auth.service';
+import { IUser } from '@/users/users.interface';
+import { User } from '@/decorator/user.decorator';
 import { LocalAuthGuard } from './local-auth.guard';
 import { CreateUserDto } from '@/users/dto/create-user.dto';
 import { Public, ResponseMessage } from '@/decorator/customize.decorator';
@@ -28,5 +31,14 @@ export class AuthController {
         @Res({ passthrough: true }) response: Response,
     ) {
         return await this.authService.register(body, response);
+    }
+
+    @Post('logout')
+    @ResponseMessage('Đăng xuất thành công')
+    async handleLogout(
+        @User() user: IUser,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        return await this.authService.logout(user, response);
     }
 }
