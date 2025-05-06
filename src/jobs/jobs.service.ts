@@ -65,20 +65,14 @@ export class JobsService {
     }
 
     async findOne(id: string) {
-        if (!Types.ObjectId.isValid(id)) {
-            throw new BadRequestException(`Job không hợp lệ`);
-        }
-        const job = await this.jobModel.findById(id);
-        if (!job) {
-            throw new NotFoundException(`Job không tồn tại`);
-        }
-        return job;
+        await this.checkJobExists(id);
+        return await this.jobModel.findById(id);
     }
 
     async update(id: string, updateJobDto: UpdateJobDto, user: IUser) {
         await this.checkJobExists(id);
-        const job = await this.jobModel.findByIdAndUpdate(
-            id,
+        await this.jobModel.updateOne(
+            { _id: id },
             {
                 ...updateJobDto,
                 updatedBy: {
@@ -86,12 +80,11 @@ export class JobsService {
                     email: user.email,
                 },
             },
-            { new: true },
         );
 
         return {
-            _id: job._id,
-            updatedAt: job.updatedAt,
+            _id: id,
+            updatedAt: new Date(),
         };
     }
 

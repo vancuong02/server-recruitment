@@ -1,41 +1,65 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    BadRequestException,
+} from '@nestjs/common';
+import { Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 
 import { IUser } from '@/users/users.interface';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { Company, CompanyDocument } from './schemas/company.schema';
+import { CompanyModel, CompanyDocument } from './schemas/company.schema';
 
 @Injectable()
 export class CompaniesService {
     constructor(
-        @InjectModel(Company.name)
+        @InjectModel(CompanyModel.name)
         private companyModel: SoftDeleteModel<CompanyDocument>,
     ) {}
 
     private async checkCompanyExists(id: string) {
-        const company = await this.companyModel.findById(id);
+        if (!Types.ObjectId.isValid(id)) {
+            throw new BadRequestException('Id công ty không hợp lệ');
+        }
+        const company = await this.companyModel.findOne({ _id: id });
         if (!company) {
             throw new NotFoundException('Công ty không tồn tại trong hệ thống');
-        } else {
-            return company;
         }
     }
 
-    async create(createCompanyDto: CreateCompanyDto, user: IUser) {
-        return await this.companyModel.create({
+    async create(user: IUser, createCompanyDto: CreateCompanyDto) {
+        const company = await this.companyModel.create({
             ...createCompanyDto,
             createdBy: {
                 _id: user._id,
                 email: user.email,
             },
         });
+
+        return {
+            _id: company._id,
+            createdAt: company.createdAt,
+        };
     }
 
-    async update(id: string, updateCompanyDto: UpdateCompanyDto) {
+    async update(user: IUser, id: string, updateCompanyDto: UpdateCompanyDto) {
         await this.checkCompanyExists(id);
-        await this.companyModel.updateOne({ _id: id }, updateCompanyDto);
+        await this.companyModel.updateOne(
+            { _id: id },
+            {
+                ...updateCompanyDto,
+                updatedBy: {
+                    _id: user._id,
+                    email: user.email,
+                },
+            },
+        );
+        return {
+            _id: id,
+            updatedAt: new Date(),
+        };
     }
 
     async findAll(page: number, pageSize: number, name?: string) {
@@ -50,11 +74,7 @@ export class CompaniesService {
         }
 
         const [items, totalItems] = await Promise.all([
-            this.companyModel
-                .find(condition)
-                .skip(skip)
-                .limit(defaultPageSize)
-                .exec(),
+            this.companyModel.find(condition).skip(skip).limit(defaultPageSize),
             this.companyModel.countDocuments(condition),
         ]);
 
@@ -70,11 +90,21 @@ export class CompaniesService {
     }
 
     async findOne(id: string) {
-        return await this.checkCompanyExists(id);
+        await this.checkCompanyExists(id);
+        return await this.companyModel.findById(id);
     }
 
-    async remove(id: string) {
+    async remove(user: IUser, id: string) {
         await this.checkCompanyExists(id);
+        await this.companyModel.updateOne(
+            { _id: id },
+            {
+                deletedBy: {
+                    _id: user._id,
+                    email: user.email,
+                },
+            },
+        );
         await this.companyModel.softDelete({ _id: id });
     }
 }

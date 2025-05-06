@@ -76,14 +76,8 @@ export class ResumesService {
     }
 
     async findOne(id: string) {
-        if (!Types.ObjectId.isValid(id)) {
-            throw new BadRequestException(`Resume không hợp lệ`);
-        }
-        const resume = await this.resumeModel.findById(id);
-        if (!resume) {
-            throw new NotFoundException(`Resume không tồn tại`);
-        }
-        return resume;
+        await this.checkResumeExists(id);
+        return await this.resumeModel.findById(id);
     }
 
     async update(user: IUser, id: string, updateResumeDto: UpdateResumeDto) {

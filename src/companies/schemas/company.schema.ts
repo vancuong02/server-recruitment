@@ -1,12 +1,13 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export type CompanyDocument = HydratedDocument<Company>;
+export type CompanyDocument = HydratedDocument<CompanyModel>;
 
 @Schema({
     timestamps: true,
+    collection: 'companies',
 })
-export class Company {
+export class CompanyModel {
     @Prop()
     name: string;
 
@@ -39,6 +40,12 @@ export class Company {
 
     @Prop()
     deletedAt: Date;
+
+    @Prop()
+    createdAt: Date;
+
+    @Prop()
+    updatedAt: Date;
 }
 
-export const CompanySchema = SchemaFactory.createForClass(Company);
+export const CompanySchema = SchemaFactory.createForClass(CompanyModel);

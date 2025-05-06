@@ -22,10 +22,10 @@ export class CompaniesController {
     @Post()
     @ResponseMessage('Tạo công ty thành công')
     async create(
-        @Body() createCompanyDto: CreateCompanyDto,
         @User() user: IUser,
+        @Body() createCompanyDto: CreateCompanyDto,
     ) {
-        return this.companiesService.create(createCompanyDto, user);
+        return this.companiesService.create(user, createCompanyDto);
     }
 
     @Get()
@@ -46,15 +46,16 @@ export class CompaniesController {
     @Patch(':id')
     @ResponseMessage('Cập nhật công ty thành công')
     update(
+        @User() user: IUser,
         @Param('id') id: string,
         @Body() updateCompanyDto: UpdateCompanyDto,
     ) {
-        return this.companiesService.update(id, updateCompanyDto);
+        return this.companiesService.update(user, id, updateCompanyDto);
     }
 
     @Delete(':id')
     @ResponseMessage('Xóa công ty thành công')
-    remove(@Param('id') id: string) {
-        return this.companiesService.remove(id);
+    remove(@User() user: IUser, @Param('id') id: string) {
+        return this.companiesService.remove(user, id);
     }
 }

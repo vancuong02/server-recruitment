@@ -11,7 +11,7 @@ import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 
 import { IUser } from './users.interface';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { User as UserModel, UserDocument } from './schemas/user.schema';
+import { UserModel, UserDocument } from './schemas/user.schema';
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
 
@@ -22,16 +22,19 @@ export class UsersService {
         private userModel: SoftDeleteModel<UserDocument>,
     ) {}
 
-    private async checkUserExists(id: string, hiddenPassword?: boolean) {
-        const user = await this.userModel.findById(id, {
-            password: hiddenPassword ? 0 : 1,
-        });
+    checkPassword(plain: string, hash: string) {
+        return compareSync(plain, hash);
+    }
+
+    private async checkUserExists(id: string) {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new BadRequestException('Id người dùng không hợp lệ');
+        }
+        const user = await this.userModel.findOne({ _id: id });
         if (!user) {
             throw new NotFoundException(
                 'Người dùng không tồn tại trong hệ thống',
             );
-        } else {
-            return user;
         }
     }
 
@@ -59,8 +62,7 @@ export class UsersService {
             role: 'user',
             password: hashPassword,
         };
-        const newUser = new this.userModel(userData);
-        await newUser.save();
+        const newUser = await this.userModel.create(userData);
 
         return {
             _id: newUser._id,
@@ -81,8 +83,7 @@ export class UsersService {
                 email: user.email,
             },
         };
-        const newUser = new this.userModel(userData);
-        await newUser.save();
+        const newUser = await this.userModel.create(userData);
 
         return {
             _id: newUser._id,
@@ -92,8 +93,8 @@ export class UsersService {
 
     async updateProfile(id: string, updateUserDto: UpdateUserDto, user: IUser) {
         await this.checkUserExists(id);
-        const updatedUser = await this.userModel.findByIdAndUpdate(
-            id,
+        await this.userModel.updateOne(
+            { _id: id },
             {
                 ...updateUserDto,
                 updatedBy: {
@@ -101,12 +102,11 @@ export class UsersService {
                     email: user.email,
                 },
             },
-            { new: true },
         );
 
         return {
-            _id: updatedUser._id,
-            updatedAt: updatedUser.updatedAt,
+            _id: id,
+            updatedAt: new Date(),
         };
     }
 
@@ -119,8 +119,8 @@ export class UsersService {
         if (updateUserDto.email) {
             await this.checkEmailExists(updateUserDto.email, id);
         }
-        const updatedUser = await this.userModel.findByIdAndUpdate(
-            id,
+        await this.userModel.updateOne(
+            { _id: id },
             {
                 ...updateUserDto,
                 updatedBy: {
@@ -128,27 +128,25 @@ export class UsersService {
                     email: user.email,
                 },
             },
-            { new: true },
         );
 
         return {
-            _id: updatedUser._id,
-            updatedAt: updatedUser.updatedAt,
+            _id: id,
+            updatedAt: new Date(),
         };
     }
 
     async remove(id: string, user: IUser) {
         await this.checkUserExists(id);
 
-        await this.userModel.findByIdAndUpdate(
-            id,
+        await this.userModel.updateOne(
+            { _id: id },
             {
                 deletedBy: {
                     _id: user._id,
                     email: user.email,
                 },
             },
-            { new: true },
         );
 
         await this.userModel.softDelete({ _id: id });
@@ -189,15 +187,23 @@ export class UsersService {
     }
 
     async findById(id: string) {
-        return await this.checkUserExists(id, true);
-    }
-
-    checkPassword(plain: string, hash: string) {
-        return compareSync(plain, hash);
+        await this.checkUserExists(id);
+        return await this.userModel.findById(id, {
+            password: 0,
+        });
     }
 
     async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
-        const user = await this.checkUserExists(id);
+        if (!Types.ObjectId.isValid(id)) {
+            throw new BadRequestException('Id người dùng không hợp lệ');
+        }
+        const user = await this.userModel.findById(id);
+        if (!user) {
+            throw new NotFoundException(
+                'Người dùng không tồn tại trong hệ thống',
+            );
+        }
+
         const isValidPassword = compareSync(
             changePasswordDto.currentPassword,
             user.password,
