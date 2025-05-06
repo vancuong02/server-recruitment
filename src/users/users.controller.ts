@@ -58,7 +58,10 @@ export class UsersController {
 
     @Get()
     @ResponseMessage('Lấy danh sách người dùng thành công')
-    findAll(@Query('page') page: string, @Query('pageSize') pageSize: string) {
+    findAll(
+        @Query('current') page: string,
+        @Query('pageSize') pageSize: string,
+    ) {
         return this.usersService.findAll(+page, +pageSize);
     }
 

@@ -27,7 +27,10 @@ export class ResumesController {
 
     @Get()
     @ResponseMessage('Lấy danh sách resume thành công')
-    findAll(@Query('page') page: string, @Query('pageSize') pageSize: string) {
+    findAll(
+        @Query('current') page: string,
+        @Query('pageSize') pageSize: string,
+    ) {
         return this.resumesService.findAll(+page, +pageSize);
     }
 

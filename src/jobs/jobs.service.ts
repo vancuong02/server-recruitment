@@ -11,6 +11,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { JobDocument, JobModel } from './schemas/job.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { QueryJobDto } from './dto/query-job.dto';
 
 @Injectable()
 export class JobsService {
@@ -43,19 +44,35 @@ export class JobsService {
         };
     }
 
-    async findAll(page: number, pageSize: number) {
-        const defaultPage = page ? page : 1;
+    async findAll(query: QueryJobDto) {
+        const { current, pageSize, skills, location, level } = query;
+        const defaultCurrent = current ? current : 1;
         const defaultPageSize = pageSize ? pageSize : 10;
-        const skip = (defaultPage - 1) * defaultPageSize;
+        const skip = (defaultCurrent - 1) * defaultPageSize;
+
+        const condition: any = {};
+
+        if (skills) {
+            const skillArray = skills.split(',').map((skill) => skill.trim());
+            condition['skills'] = { $in: skillArray };
+        }
+
+        if (location) {
+            condition['location'] = { $regex: new RegExp(location, 'i') };
+        }
+
+        if (level) {
+            condition['level'] = { $regex: new RegExp(level, 'i') };
+        }
 
         const [items, totalItems] = await Promise.all([
-            this.jobModel.find().skip(skip).limit(defaultPageSize),
-            this.jobModel.countDocuments(),
+            this.jobModel.find(condition).skip(skip).limit(defaultPageSize),
+            this.jobModel.countDocuments(condition),
         ]);
 
         return {
             meta: {
-                currentPage: defaultPage,
+                currentPage: defaultCurrent,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,

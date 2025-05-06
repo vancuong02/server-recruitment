@@ -12,7 +12,7 @@ export class CompanyModel {
     name: string;
 
     @Prop()
-    address: string;
+    location: string;
 
     @Prop()
     description: string;

@@ -30,7 +30,10 @@ export class PermissionsController {
 
     @Get()
     @ResponseMessage('Lấy danh sách quyền thành công')
-    findAll(@Query('page') page: string, @Query('pageSize') pageSize: string) {
+    findAll(
+        @Query('current') page: string,
+        @Query('pageSize') pageSize: string,
+    ) {
         return this.permissionsService.findAll(+page, +pageSize);
     }
 

@@ -1,5 +1,13 @@
 import { Request, Response } from 'express';
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Req,
+    Res,
+    UseGuards,
+} from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { IUser } from '@/users/users.interface';
@@ -31,6 +39,17 @@ export class AuthController {
         @Res({ passthrough: true }) response: Response,
     ) {
         return await this.authService.register(body, response);
+    }
+
+    @Public()
+    @Get('refresh-token')
+    @ResponseMessage('Lấy accessToken mới thành công')
+    handleRefreshToken(
+        @Req() request: Request,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        const refreshToken = request.cookies['refresh_token'];
+        return this.authService.refreshToken(refreshToken, response);
     }
 
     @Post('logout')

@@ -220,6 +220,10 @@ export class UsersService {
         return await this.userModel.updateOne({ _id }, { refreshToken });
     }
 
+    async findUserByToken(refreshToken: string) {
+        return await this.userModel.findOne({ refreshToken });
+    }
+
     async logout(_id: Types.ObjectId) {
         return await this.userModel.updateOne({ _id }, { refreshToken: null });
     }

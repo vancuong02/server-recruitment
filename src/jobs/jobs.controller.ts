@@ -14,6 +14,7 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { User } from '@/decorator/user.decorator';
 import { IUser } from '@/users/users.interface';
 import { ResponseMessage } from '@/decorator/customize.decorator';
+import { QueryJobDto } from './dto/query-job.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -27,8 +28,8 @@ export class JobsController {
 
     @Get()
     @ResponseMessage('Lấy danh sách việc làm thành công')
-    findAll(@Query('page') page: string, @Query('pageSize') pageSize: string) {
-        return this.jobsService.findAll(+page, +pageSize);
+    findAll(@Query() query: QueryJobDto) {
+        return this.jobsService.findAll(query);
     }
 
     @Get(':id')

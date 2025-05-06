@@ -1,8 +1,10 @@
 import ms from 'ms';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+
+import { TokenPayload } from '@/types';
 import { IUser } from '@/users/users.interface';
 import { UsersService } from '@/users/users.service';
 import { CreateUserDto } from '@/users/dto/create-user.dto';
@@ -84,7 +86,6 @@ export class AuthService {
 
         return {
             access_token,
-            refresh_token,
             user: {
                 _id,
                 email,
@@ -101,6 +102,38 @@ export class AuthService {
     async register(body: CreateUserDto, response: Response) {
         const newUser = await this.usersService.create(body);
         return this.generateTokens(newUser, response);
+    }
+
+    async refreshToken(refreshToken: string, response: Response) {
+        try {
+            const decoded: TokenPayload = this.jwtService.verify(refreshToken, {
+                secret: this.configService.get<string>(
+                    'JWT_REFRESH_TOKEN_SECRET',
+                ),
+            });
+
+            const checkExistsRefreshToken =
+                await this.usersService.findUserByToken(refreshToken);
+            if (!checkExistsRefreshToken) {
+                throw new UnauthorizedException('Refresh token không hợp lệ');
+            }
+
+            const user: IUser = {
+                _id: decoded._id,
+                email: decoded.email,
+                name: decoded.name,
+                role: decoded.role,
+            };
+
+            return await this.generateTokens(user, response);
+        } catch (error) {
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
+            throw new UnauthorizedException(
+                'Token không hợp lệ hoặc đã hết hạn',
+            );
+        }
     }
 
     async logout(user: IUser, response: Response) {

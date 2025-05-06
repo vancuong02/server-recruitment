@@ -14,6 +14,7 @@ import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ResponseMessage } from '@/decorator/customize.decorator';
+import { QueryCompanyDto } from './dto/query-company.dto';
 
 @Controller('companies')
 export class CompaniesController {
@@ -30,12 +31,8 @@ export class CompaniesController {
 
     @Get()
     @ResponseMessage('Lấy danh sách công ty thành công')
-    findAll(
-        @Query('name') name: string,
-        @Query('page') page: string,
-        @Query('pageSize') pageSize: string,
-    ) {
-        return this.companiesService.findAll(+page, +pageSize, name);
+    findAll(@Query() query: QueryCompanyDto) {
+        return this.companiesService.findAll(query);
     }
 
     @Get(':id')

@@ -11,6 +11,7 @@ import { IUser } from '@/users/users.interface';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CompanyModel, CompanyDocument } from './schemas/company.schema';
+import { QueryCompanyDto } from './dto/query-company.dto';
 
 @Injectable()
 export class CompaniesService {
@@ -62,15 +63,18 @@ export class CompaniesService {
         };
     }
 
-    async findAll(page: number, pageSize: number, name?: string) {
-        const defaultPage = page ? page : 1;
+    async findAll(query: QueryCompanyDto) {
+        const { name, location, current, pageSize } = query;
+        const defaultCurrent = current ? current : 1;
         const defaultPageSize = pageSize ? pageSize : 10;
-
-        const skip = (defaultPage - 1) * defaultPageSize;
+        const skip = (defaultCurrent - 1) * defaultPageSize;
 
         const condition = {};
         if (name) {
             condition['name'] = { $regex: new RegExp(name, 'i') };
+        }
+        if (location) {
+            condition['location'] = { $regex: new RegExp(location, 'i') };
         }
 
         const [items, totalItems] = await Promise.all([
@@ -80,7 +84,7 @@ export class CompaniesService {
 
         return {
             meta: {
-                currentPage: defaultPage,
+                currentPage: defaultCurrent,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,

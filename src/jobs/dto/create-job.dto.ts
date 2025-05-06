@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsDate,
     IsMongoId,
@@ -39,12 +39,12 @@ export class CreateJobDto {
     description: string;
 
     @IsNotEmpty({ message: 'Ngày bắt đầu không được để trống' })
-    @Type(() => Date)
+    @Transform(({ value }) => new Date(value))
     @IsDate({ message: 'Ngày bắt đầu không hợp lệ' })
     startDate: Date;
 
     @IsNotEmpty({ message: 'Ngày kết thúc không được để trống' })
-    @Type(() => Date)
+    @Transform(({ value }) => new Date(value))
     @IsDate({ message: 'Ngày kết thúc không hợp lệ' })
     endDate: Date;
 
