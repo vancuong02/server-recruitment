@@ -1,15 +1,14 @@
 import {
-    BadRequestException,
     Injectable,
     NotFoundException,
+    BadRequestException,
 } from '@nestjs/common';
-import { CreateResumeDto } from './dto/create-resume.dto';
-import { UpdateResumeDto } from './dto/update-resume.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { ResumeDocument, ResumeModel } from './schemas/resume.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from '@/users/users.interface';
+import { CreateResumeDto } from './dto/create-resume.dto';
+import { ResumeDocument, ResumeModel } from './schemas/resume.schema';
 
 @Injectable()
 export class ResumesService {
@@ -29,28 +28,32 @@ export class ResumesService {
     }
 
     async create(user: IUser, createResumeDto: CreateResumeDto) {
-        const resume = await this.resumeModel.create({
+        const { email, _id } = user;
+
+        await this.resumeModel.create({
             ...createResumeDto,
+            email,
+            userId: _id,
             status: 'PENDING',
             history: [
                 {
                     status: 'PENDING',
                     updatedAt: new Date(),
                     updatedBy: {
-                        _id: user._id,
-                        email: user.email,
+                        _id,
+                        email,
                     },
                 },
             ],
             createdBy: {
-                _id: user._id,
-                email: user.email,
+                _id,
+                email,
             },
         });
 
         return {
-            _id: resume?._id,
-            createdAt: resume?.createdAt,
+            _id: _id,
+            createdAt: new Date(),
         };
     }
 
@@ -60,7 +63,12 @@ export class ResumesService {
         const skip = (defaultPage - 1) * defaultPageSize;
 
         const [items, totalItems] = await Promise.all([
-            this.resumeModel.find().skip(skip).limit(defaultPageSize),
+            this.resumeModel
+                .find()
+                .populate('companyId', '_id name logo')
+                .populate('jobId', '_id name')
+                .skip(skip)
+                .limit(defaultPageSize),
             this.resumeModel.countDocuments(),
         ]);
 
@@ -77,34 +85,47 @@ export class ResumesService {
 
     async findOne(id: string) {
         await this.checkResumeExists(id);
-        return await this.resumeModel.findById(id);
+        return await this.resumeModel
+            .findById(id)
+            .populate('companyId', '_id name logo')
+            .populate('jobId', '_id name');
     }
 
-    async update(user: IUser, id: string, updateResumeDto: UpdateResumeDto) {
+    async findByUser(user: IUser) {
+        const { _id } = user;
+        return await this.resumeModel
+            .find({ userId: _id })
+            .populate('companyId', '_id name logo')
+            .populate('jobId', '_id name');
+    }
+
+    async update(user: IUser, id: string, status: string) {
+        const { email, _id } = user;
         await this.checkResumeExists(id);
-        const resume = await this.resumeModel.findByIdAndUpdate(id, {
-            ...updateResumeDto,
-            status: 'PENDING',
-            history: [
-                ...(await this.resumeModel.findById(id)).history,
-                {
-                    status: 'PENDING',
-                    updatedAt: new Date(),
-                    updatedBy: {
-                        _id: user._id,
-                        email: user.email,
+        await this.resumeModel.updateOne(
+            { _id: id },
+            {
+                status,
+                updatedBy: {
+                    _id,
+                    email,
+                },
+                $push: {
+                    history: {
+                        status,
+                        updatedAt: new Date(),
+                        updatedBy: {
+                            _id,
+                            email,
+                        },
                     },
                 },
-            ],
-            updatedBy: {
-                _id: user._id,
-                email: user.email,
             },
-        });
+        );
 
         return {
-            _id: resume?._id,
-            updatedAt: resume?.updatedAt,
+            _id: id,
+            updatedAt: new Date(),
         };
     }
 

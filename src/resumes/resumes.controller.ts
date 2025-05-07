@@ -39,14 +39,19 @@ export class ResumesController {
         return this.resumesService.findOne(id);
     }
 
+    @Post('by-user')
+    findByUser(@User() user: IUser) {
+        return this.resumesService.findByUser(user);
+    }
+
     @Patch(':id')
     @ResponseMessage('Cập nhật resume thành công')
     update(
         @User() user: IUser,
         @Param('id') id: string,
-        @Body() updateResumeDto: UpdateResumeDto,
+        @Body('status') status: string,
     ) {
-        return this.resumesService.update(user, id, updateResumeDto);
+        return this.resumesService.update(user, id, status);
     }
 
     @Delete(':id')

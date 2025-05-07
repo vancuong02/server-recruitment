@@ -1,5 +1,7 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { JobModel } from '@/jobs/schemas/job.schema';
+import { CompanyModel } from '@/companies/schemas/company.schema';
 
 export type ResumeDocument = HydratedDocument<ResumeModel>;
 
@@ -20,10 +22,10 @@ export class ResumeModel {
     @Prop()
     status: string;
 
-    @Prop()
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CompanyModel.name })
     companyId: mongoose.Schema.Types.ObjectId;
 
-    @Prop()
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: JobModel.name })
     jobId: mongoose.Schema.Types.ObjectId;
 
     @Prop({ type: Array })
@@ -61,12 +63,6 @@ export class ResumeModel {
         _id: mongoose.Schema.Types.ObjectId;
         name: string;
     };
-
-    @Prop()
-    createdAt: Date;
-
-    @Prop()
-    updatedAt: Date;
 }
 
 export const ResumeSchema = SchemaFactory.createForClass(ResumeModel);

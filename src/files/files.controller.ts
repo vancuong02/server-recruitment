@@ -15,7 +15,7 @@ export class FilesController {
     constructor(private readonly filesService: FilesService) {}
 
     @Post('upload')
-    @ResponseMessage('Tải ảnh lên thành công')
+    @ResponseMessage('Tải file lên thành công')
     @UseInterceptors(FileInterceptor('fileUpload'))
     uploadFile(
         @UploadedFile(
@@ -26,7 +26,7 @@ export class FilesController {
                 })
                 .addMaxSizeValidator({
                     maxSize: 1024 * 1024 * 5,
-                    message: 'Dung lượng ảnh vượt quá 5MB',
+                    message: 'Dung lượng file vượt quá 5MB',
                 })
                 .build({
                     exceptionFactory: (error) => {
