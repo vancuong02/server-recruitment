@@ -11,6 +11,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { ResumesModule } from './resumes/resumes.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { RolesModule } from './roles/roles.module';
         ResumesModule,
         PermissionsModule,
         RolesModule,
+        FilesModule,
     ],
     controllers: [AppController],
     providers: [AppService],
