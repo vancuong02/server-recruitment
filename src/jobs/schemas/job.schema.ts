@@ -18,13 +18,14 @@ export class JobModel {
     company: {
         _id: mongoose.Schema.Types.ObjectId;
         name: string;
+        logo: string;
     };
 
     @Prop()
     location: string;
 
     @Prop()
-    salary: number;
+    salary: string;
 
     @Prop()
     quantity: number;

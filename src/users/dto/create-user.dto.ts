@@ -16,6 +16,8 @@ export class CompanyDto {
 
     @IsNotEmpty({ message: 'Tên công ty không được để trống' })
     name: string;
+
+    logo: string;
 }
 
 export class CreateUserDto {

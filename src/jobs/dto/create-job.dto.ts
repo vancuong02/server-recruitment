@@ -1,13 +1,11 @@
-import mongoose from 'mongoose';
-import { Transform, Type } from 'class-transformer';
 import {
     IsDate,
-    IsMongoId,
     IsNotEmpty,
-    IsNotEmptyObject,
     IsObject,
     ValidateNested,
+    IsNotEmptyObject,
 } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { CompanyDto } from '@/users/dto/create-user.dto';
 
 export class CreateJobDto {
@@ -27,7 +25,7 @@ export class CreateJobDto {
     location: string;
 
     @IsNotEmpty({ message: 'Lương không được để trống' })
-    salary: number;
+    salary: string;
 
     @IsNotEmpty({ message: 'Số lượng không được để trống' })
     quantity: number;

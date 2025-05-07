@@ -13,7 +13,7 @@ import { User } from '@/decorator/user.decorator';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { ResponseMessage } from '@/decorator/customize.decorator';
+import { Public, ResponseMessage } from '@/decorator/customize.decorator';
 import { QueryCompanyDto } from './dto/query-company.dto';
 
 @Controller('companies')
@@ -29,12 +29,14 @@ export class CompaniesController {
         return this.companiesService.create(user, createCompanyDto);
     }
 
+    @Public()
     @Get()
     @ResponseMessage('Lấy danh sách công ty thành công')
     findAll(@Query() query: QueryCompanyDto) {
         return this.companiesService.findAll(query);
     }
 
+    @Public()
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.companiesService.findOne(id);

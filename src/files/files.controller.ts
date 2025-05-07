@@ -16,13 +16,13 @@ export class FilesController {
 
     @Post('upload')
     @ResponseMessage('Tải ảnh lên thành công')
-    @UseInterceptors(FileInterceptor('file'))
+    @UseInterceptors(FileInterceptor('fileUpload'))
     uploadFile(
         @UploadedFile(
             new ParseFilePipeBuilder()
                 .addFileTypeValidator({
                     fileType:
-                        /^(image\/(jpeg|png|gif)|application\/(pdf|msword)|text\/plain)$/,
+                        /^(image\/(jpeg|png|gif|webp)|application\/(pdf|msword)|text\/plain)$/,
                 })
                 .addMaxSizeValidator({
                     maxSize: 1024 * 1024 * 5,
@@ -36,7 +36,7 @@ export class FilesController {
                             )
                         ) {
                             throw new UnprocessableEntityException(
-                                'Chỉ chấp nhận các định dạng: jpeg, png, gif, pdf, doc, txt',
+                                'Chỉ chấp nhận các định dạng: jpeg, png, gif, webp, pdf, doc, txt',
                             );
                         } else {
                             throw new UnprocessableEntityException(error);

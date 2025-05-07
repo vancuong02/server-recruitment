@@ -13,7 +13,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { User } from '@/decorator/user.decorator';
 import { IUser } from '@/users/users.interface';
-import { ResponseMessage } from '@/decorator/customize.decorator';
+import { Public, ResponseMessage } from '@/decorator/customize.decorator';
 import { QueryJobDto } from './dto/query-job.dto';
 
 @Controller('jobs')
@@ -26,12 +26,14 @@ export class JobsController {
         return this.jobsService.create(user, createJobDto);
     }
 
+    @Public()
     @Get()
     @ResponseMessage('Lấy danh sách việc làm thành công')
     findAll(@Query() query: QueryJobDto) {
         return this.jobsService.findAll(query);
     }
 
+    @Public()
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.jobsService.findOne(id);

@@ -12,6 +12,9 @@ export class CompanyModel {
     name: string;
 
     @Prop()
+    logo: string;
+
+    @Prop()
     location: string;
 
     @Prop()
