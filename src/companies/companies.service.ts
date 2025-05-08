@@ -77,7 +77,7 @@ export class CompaniesService {
             condition['location'] = { $regex: new RegExp(location, 'i') };
         }
 
-        const [items, totalItems] = await Promise.all([
+        const [items, total] = await Promise.all([
             this.companyModel.find(condition).skip(skip).limit(defaultPageSize),
             this.companyModel.countDocuments(condition),
         ]);
@@ -86,8 +86,8 @@ export class CompaniesService {
             meta: {
                 current: defaultCurrent,
                 pageSize: defaultPageSize,
-                totalPages: Math.ceil(totalItems / defaultPageSize),
-                totalItems,
+                pages: Math.ceil(total / defaultPageSize),
+                total,
             },
             result: items,
         };

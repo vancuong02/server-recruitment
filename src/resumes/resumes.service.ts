@@ -62,7 +62,7 @@ export class ResumesService {
         const defaultPageSize = pageSize ? pageSize : 10;
         const skip = (defaultPage - 1) * defaultPageSize;
 
-        const [items, totalItems] = await Promise.all([
+        const [items, total] = await Promise.all([
             this.resumeModel
                 .find()
                 .populate('companyId', '_id name logo')
@@ -77,8 +77,8 @@ export class ResumesService {
             meta: {
                 current: defaultPage,
                 pageSize: defaultPageSize,
-                totalPages: Math.ceil(totalItems / defaultPageSize),
-                totalItems,
+                pages: Math.ceil(total / defaultPageSize),
+                total,
             },
             result: items,
         };

@@ -100,22 +100,20 @@ export class UsersService {
         };
     }
 
-    async updateProfile(id: string, updateUserDto: UpdateUserDto, user: IUser) {
-        await this.checkUserExists(id);
-        await this.userModel.updateOne(
-            { _id: id },
+    async updateProfile(updateUserDto: UpdateUserDto, user: IUser) {
+        const { _id, email } = user;
+        await this.checkUserExists(user._id.toString());
+        const userUpdated = await this.userModel.findByIdAndUpdate(
+            _id,
             {
                 ...updateUserDto,
-                updatedBy: {
-                    _id: user._id,
-                    email: user.email,
-                },
+                updatedBy: { _id, email },
             },
+            { new: true },
         );
 
         return {
-            _id: id,
-            updatedAt: new Date(),
+            name: userUpdated.name,
         };
     }
 
@@ -172,7 +170,7 @@ export class UsersService {
         const defaultPageSize = pageSize ? pageSize : 10;
         const skip = (defaultPage - 1) * defaultPageSize;
 
-        const [items, totalItems] = await Promise.all([
+        const [items, total] = await Promise.all([
             this.userModel
                 .find({}, { password: 0 })
                 .populate('role', '_id name')
@@ -186,8 +184,8 @@ export class UsersService {
             meta: {
                 current: defaultPage,
                 pageSize: defaultPageSize,
-                totalPages: Math.ceil(totalItems / defaultPageSize),
-                totalItems,
+                pages: Math.ceil(total / defaultPageSize),
+                total,
             },
             result: items,
         };
@@ -215,10 +213,13 @@ export class UsersService {
             .populate('companyId', '_id name logo');
     }
 
-    async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
-        if (!Types.ObjectId.isValid(id)) {
-            throw new BadRequestException('Id người dùng không hợp lệ');
-        }
+    async changePassword(
+        id: Types.ObjectId,
+        changePasswordDto: ChangePasswordDto,
+    ) {
+        console.log('changePasswordDto: ', changePasswordDto);
+        console.log('id: ', id);
+
         const user = await this.userModel.findById(id);
         if (!user) {
             throw new NotFoundException(
@@ -231,7 +232,7 @@ export class UsersService {
             user.password,
         );
         if (!isValidPassword) {
-            throw new UnauthorizedException('Mật khẩu hiện tại không đúng');
+            throw new BadRequestException('Mật khẩu hiện tại không đúng');
         }
         const hashPassword = this.hashPassword(changePasswordDto.newPassword);
         user.password = hashPassword;

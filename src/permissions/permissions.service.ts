@@ -63,7 +63,7 @@ export class PermissionsService {
         const defaultPageSize = pageSize ? pageSize : 10;
         const skip = (defaultPage - 1) * defaultPageSize;
 
-        const [items, totalItems] = await Promise.all([
+        const [items, total] = await Promise.all([
             this.permissionModel.find().skip(skip).limit(defaultPageSize),
             this.permissionModel.countDocuments(),
         ]);
@@ -72,8 +72,8 @@ export class PermissionsService {
             meta: {
                 current: defaultPage,
                 pageSize: defaultPageSize,
-                totalPages: Math.ceil(totalItems / defaultPageSize),
-                totalItems,
+                pages: Math.ceil(total / defaultPageSize),
+                total,
             },
             result: items,
         };

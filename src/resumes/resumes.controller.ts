@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { ResumesService } from './resumes.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
-import { UpdateResumeDto } from './dto/update-resume.dto';
 import { ResponseMessage } from '@/decorator/customize.decorator';
 import { IUser } from '@/users/users.interface';
 import { User } from '@/decorator/user.decorator';

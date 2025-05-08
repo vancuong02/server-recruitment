@@ -26,8 +26,25 @@ export class UsersController {
         return this.usersService.adminCreateUser(createUserDto, user);
     }
 
+    @Patch('change-password')
+    @ResponseMessage('Đổi mật khẩu thành công')
+    changePassword(
+        @User() user: IUser,
+        @Body() changePasswordDto: ChangePasswordDto,
+    ) {
+        console.log(user);
+
+        return this.usersService.changePassword(user._id, changePasswordDto);
+    }
+
+    @Patch('profile')
+    @ResponseMessage('Cập nhật thông tin thành công')
+    updateProfile(@Body() updateUserDto: UpdateUserDto, @User() user: IUser) {
+        return this.usersService.updateProfile(updateUserDto, user);
+    }
+
     @Patch(':id')
-    @ResponseMessage('Cập nhật người dùng thành công')
+    @ResponseMessage('Cập nhật thông tin người dùng thành công')
     update(
         @Param('id') id: string,
         @Body() updateUserDto: AdminUpdateUserDto,
@@ -40,15 +57,6 @@ export class UsersController {
     @ResponseMessage('Xóa người dùng thành công')
     remove(@Param('id') id: string, @User() user: IUser) {
         return this.usersService.remove(id, user);
-    }
-
-    @Patch('profile')
-    updateProfile(
-        @Param('id') id: string,
-        @Body() updateUserDto: UpdateUserDto,
-        @User() user: IUser,
-    ) {
-        return this.usersService.updateProfile(id, updateUserDto, user);
     }
 
     @Get()
@@ -68,14 +76,5 @@ export class UsersController {
     @Get(':id')
     findById(@Param('id') id: string) {
         return this.usersService.findById(id);
-    }
-
-    @Patch('change-password/:id')
-    @ResponseMessage('Đổi mật khẩu thành công')
-    changePassword(
-        @Param('id') id: string,
-        @Body() changePasswordDto: ChangePasswordDto,
-    ) {
-        return this.usersService.changePassword(id, changePasswordDto);
     }
 }

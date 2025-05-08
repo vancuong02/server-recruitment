@@ -33,6 +33,9 @@ export class CreateUserDto {
     @IsNotEmpty({ message: 'Tuổi không được để trống' })
     age: number;
 
+    @IsNotEmpty({ message: 'Địa chỉ không được để trống' })
+    address: string;
+
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
     @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
     gender: string;

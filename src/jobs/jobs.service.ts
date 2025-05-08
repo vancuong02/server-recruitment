@@ -65,7 +65,7 @@ export class JobsService {
             condition['level'] = { $regex: new RegExp(level, 'i') };
         }
 
-        const [items, totalItems] = await Promise.all([
+        const [items, total] = await Promise.all([
             this.jobModel.find(condition).skip(skip).limit(defaultPageSize),
             this.jobModel.countDocuments(condition),
         ]);
@@ -74,8 +74,8 @@ export class JobsService {
             meta: {
                 current: defaultCurrent,
                 pageSize: defaultPageSize,
-                totalPages: Math.ceil(totalItems / defaultPageSize),
-                totalItems,
+                pages: Math.ceil(total / defaultPageSize),
+                total,
             },
             result: items,
         };
