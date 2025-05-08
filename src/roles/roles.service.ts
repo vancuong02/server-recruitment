@@ -59,7 +59,7 @@ export class RolesService {
 
         return {
             meta: {
-                currentPage: defaultPage,
+                current: defaultPage,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,
@@ -70,14 +70,13 @@ export class RolesService {
 
     async findOne(id: string) {
         await this.checkExistsRole(id);
-        return await this.roleModel.findById(id);
+        return await this.roleModel
+            .findById(id)
+            .populate('permissions', '_id apiPath name method module');
     }
 
     async update(user: IUser, id: string, updateRoleDto: UpdateRoleDto) {
         await this.checkExistsRole(id);
-        if (updateRoleDto.name) {
-            await this.checkExistsNameRole(updateRoleDto.name);
-        }
         await this.roleModel.updateOne(
             { _id: id },
             {
@@ -96,6 +95,10 @@ export class RolesService {
 
     async remove(user: IUser, id: string) {
         await this.checkExistsRole(id);
+        const roleToDelete = await this.roleModel.findById(id);
+        if (roleToDelete.name === 'ADMIN') {
+            throw new BadRequestException('Role này không thể xóa');
+        }
         await this.roleModel.updateOne(
             { _id: id },
             {

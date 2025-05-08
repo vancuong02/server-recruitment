@@ -8,10 +8,12 @@ import { TokenPayload } from '@/types';
 import { IUser } from '@/users/users.interface';
 import { UsersService } from '@/users/users.service';
 import { CreateUserDto } from '@/users/dto/create-user.dto';
+import { RolesService } from '@/roles/roles.service';
 
 @Injectable()
 export class AuthService {
     constructor(
+        private roleService: RolesService,
         private usersService: UsersService,
         private jwtService: JwtService,
         private configService: ConfigService,
@@ -74,6 +76,10 @@ export class AuthService {
         const access_token = this.generateAccessToken(user);
         const refresh_token = this.generateRefreshToken(user);
 
+        const roleId = (role as any)._id as string;
+
+        const temp = await this.roleService.findOne(roleId);
+
         await this.usersService.updateTokenUser(_id, refresh_token);
         response.cookie('refresh_token', refresh_token, {
             httpOnly: true,
@@ -91,6 +97,7 @@ export class AuthService {
                 email,
                 name,
                 role,
+                permissions: temp.permissions,
             },
         };
     }

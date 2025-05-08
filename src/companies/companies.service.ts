@@ -84,7 +84,7 @@ export class CompaniesService {
 
         return {
             meta: {
-                currentPage: defaultCurrent,
+                current: defaultCurrent,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,

@@ -42,11 +42,6 @@ export class UsersController {
         return this.usersService.remove(id, user);
     }
 
-    @Get('profile')
-    getProfile(@User() user: IUser) {
-        return user;
-    }
-
     @Patch('profile')
     updateProfile(
         @Param('id') id: string,

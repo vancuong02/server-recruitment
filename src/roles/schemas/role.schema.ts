@@ -1,5 +1,6 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { PermissionModel } from '@/permissions/schemas/permission.schema';
 
 export type RoleDocument = HydratedDocument<RoleModel>;
 
@@ -17,8 +18,8 @@ export class RoleModel {
     @Prop()
     isActive: boolean;
 
-    @Prop()
-    permissions: [];
+    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: PermissionModel.name })
+    permissions: PermissionModel[];
 
     @Prop()
     isDeleted: boolean;

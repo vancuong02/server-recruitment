@@ -47,7 +47,6 @@ export class FilesController {
         file: Express.Multer.File,
     ) {
         return {
-            fileName: file.originalname,
             fileUrl: (file as any).location,
         };
     }

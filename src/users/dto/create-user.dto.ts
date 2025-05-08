@@ -1,17 +1,15 @@
 import {
     IsIn,
     IsEmail,
-    IsObject,
     MinLength,
     IsNotEmpty,
-    ValidateNested,
-    IsNotEmptyObject,
+    IsMongoId,
 } from 'class-validator';
 import mongoose from 'mongoose';
-import { Type } from 'class-transformer';
 
 export class CompanyDto {
     @IsNotEmpty({ message: 'ID công ty không được để trống' })
+    @IsMongoId({ message: 'ID công ty phải là ObjectId' })
     _id: mongoose.Schema.Types.ObjectId;
 
     @IsNotEmpty({ message: 'Tên công ty không được để trống' })
@@ -36,11 +34,12 @@ export class CreateUserDto {
     age: number;
 
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
-    @IsIn(['male', 'female', 'other'], { message: 'Giới tính không hợp lệ' })
+    @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
     gender: string;
 
     @IsNotEmpty({ message: 'Vai trò không được để trống' })
-    role: string;
+    @IsMongoId({ message: 'Vai trò phải là ObjectId' })
+    role: mongoose.Schema.Types.ObjectId;
 }
 
 export class AdminCreateUserDto {
@@ -62,16 +61,14 @@ export class AdminCreateUserDto {
     address: string;
 
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
-    @IsIn(['male', 'female', 'other'], { message: 'Giới tính không hợp lệ' })
+    @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
     gender: string;
 
     @IsNotEmpty({ message: 'Vai trò không được để trống' })
-    @IsIn(['admin', 'user', 'hr'], { message: 'Vai trò không hợp lệ' })
-    role: string;
+    @IsMongoId({ message: 'Vai trò phải là ObjectId' })
+    role: mongoose.Schema.Types.ObjectId;
 
-    @IsNotEmptyObject()
-    @IsObject()
-    @ValidateNested()
-    @Type(() => CompanyDto)
-    company: CompanyDto;
+    @IsNotEmpty({ message: 'Company không được để trống' })
+    @IsMongoId({ message: 'Company phải là ObjectId' })
+    companyId: mongoose.Schema.Types.ObjectId;
 }

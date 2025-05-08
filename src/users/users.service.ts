@@ -14,12 +14,17 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserModel, UserDocument } from './schemas/user.schema';
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
+import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema';
+import { Roles } from '@/types';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel(UserModel.name)
         private userModel: SoftDeleteModel<UserDocument>,
+
+        @InjectModel(RoleModel.name)
+        private roleModel: SoftDeleteModel<RoleDocument>,
     ) {}
 
     checkPassword(plain: string, hash: string) {
@@ -56,19 +61,23 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto) {
         await this.checkEmailExists(createUserDto.email);
+
+        const ROLE_USER = Roles.NOMAL_USER;
         const hashPassword = this.hashPassword(createUserDto.password);
+
         const userData = {
             ...createUserDto,
-            role: 'user',
+            role: ROLE_USER,
             password: hashPassword,
         };
         const newUser = await this.userModel.create(userData);
+        const role = await this.roleModel.findOne({ name: ROLE_USER });
 
         return {
             _id: newUser._id,
             name: newUser.name,
             email: newUser.email,
-            role: newUser.role,
+            role: role._id,
         };
     }
 
@@ -138,7 +147,13 @@ export class UsersService {
 
     async remove(id: string, user: IUser) {
         await this.checkUserExists(id);
-
+        // Kiểm tra user cần xóa có role ADMIN không
+        // const userToDelete = await this.userModel.findById(id);
+        // if (userToDelete?.role === 'ADMIN') {
+        //     throw new BadRequestException(
+        //         'Không thể xóa tài khoản có role ADMIN',
+        //     );
+        // }
         await this.userModel.updateOne(
             { _id: id },
             {
@@ -160,6 +175,8 @@ export class UsersService {
         const [items, totalItems] = await Promise.all([
             this.userModel
                 .find({}, { password: 0 })
+                .populate('role', '_id name')
+                .populate('companyId', '_id name logo')
                 .skip(skip)
                 .limit(defaultPageSize),
             this.userModel.countDocuments(),
@@ -167,7 +184,7 @@ export class UsersService {
 
         return {
             meta: {
-                currentPage: defaultPage,
+                current: defaultPage,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,
@@ -177,7 +194,9 @@ export class UsersService {
     }
 
     async findByEmail(email: string) {
-        const user = await this.userModel.findOne({ email });
+        const user = await this.userModel
+            .findOne({ email })
+            .populate('role', '_id name');
         if (!user) {
             throw new NotFoundException(
                 'Người dùng không tồn tại trong hệ thống',
@@ -188,9 +207,12 @@ export class UsersService {
 
     async findById(id: string) {
         await this.checkUserExists(id);
-        return await this.userModel.findById(id, {
-            password: 0,
-        });
+        return await this.userModel
+            .findById(id, {
+                password: 0,
+            })
+            .populate('role', '_id name')
+            .populate('companyId', '_id name logo');
     }
 
     async changePassword(id: string, changePasswordDto: ChangePasswordDto) {
@@ -221,7 +243,9 @@ export class UsersService {
     }
 
     async findUserByToken(refreshToken: string) {
-        return await this.userModel.findOne({ refreshToken });
+        return await this.userModel
+            .findOne({ refreshToken })
+            .populate('role', 'name');
     }
 
     async logout(_id: Types.ObjectId) {

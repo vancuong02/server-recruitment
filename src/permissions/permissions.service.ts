@@ -70,7 +70,7 @@ export class PermissionsService {
 
         return {
             meta: {
-                currentPage: defaultPage,
+                current: defaultPage,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,

@@ -1,5 +1,7 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { RoleModel } from '@/roles/schemas/role.schema';
+import { CompanyModel } from '@/companies/schemas/company.schema';
 
 export type UserDocument = HydratedDocument<UserModel>;
 
@@ -26,14 +28,14 @@ export class UserModel {
     @Prop()
     gender: string;
 
-    @Prop({ type: Object })
-    company: {
-        _id: mongoose.Schema.Types.ObjectId;
-        name: string;
-    };
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CompanyModel.name })
+    companyId: mongoose.Schema.Types.ObjectId;
 
-    @Prop()
-    role: string;
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: RoleModel.name,
+    })
+    role: mongoose.Schema.Types.ObjectId;
 
     @Prop()
     refreshToken: string;

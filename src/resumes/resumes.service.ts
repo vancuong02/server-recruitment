@@ -68,13 +68,14 @@ export class ResumesService {
                 .populate('companyId', '_id name logo')
                 .populate('jobId', '_id name')
                 .skip(skip)
-                .limit(defaultPageSize),
+                .limit(defaultPageSize)
+                .sort({ createdAt: -1 }),
             this.resumeModel.countDocuments(),
         ]);
 
         return {
             meta: {
-                currentPage: defaultPage,
+                current: defaultPage,
                 pageSize: defaultPageSize,
                 totalPages: Math.ceil(totalItems / defaultPageSize),
                 totalItems,
@@ -88,15 +89,17 @@ export class ResumesService {
         return await this.resumeModel
             .findById(id)
             .populate('companyId', '_id name logo')
-            .populate('jobId', '_id name');
+            .populate('jobId', '_id name')
+            .sort({ createdAt: -1 });
     }
 
     async findByUser(user: IUser) {
         const { _id } = user;
         return await this.resumeModel
             .find({ userId: _id })
-            .populate('companyId', '_id name logo')
-            .populate('jobId', '_id name');
+            .populate('companyId', 'name')
+            .populate('jobId', 'name')
+            .sort({ createdAt: -1 });
     }
 
     async update(user: IUser, id: string, status: string) {

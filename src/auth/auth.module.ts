@@ -1,3 +1,4 @@
+import ms from 'ms';
 import { JwtModule } from '@nestjs/jwt';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
@@ -6,11 +7,12 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '@/users/users.module';
 import { JwtStrategy } from './passport/jwt.strategy';
 import { LocalStrategy } from './passport/local.strategy';
-import ms from 'ms';
 import { AuthController } from './auth.controller';
+import { RolesModule } from '@/roles/roles.module';
 
 @Module({
     imports: [
+        RolesModule,
         UsersModule,
         PassportModule,
         JwtModule.registerAsync({
