@@ -23,7 +23,7 @@ export class AuthController {
     @Public()
     @UseGuards(LocalAuthGuard)
     @ResponseMessage('Đăng nhập thành công')
-    @Post('/login')
+    @Post('login')
     async handleLogin(
         @Req() req: Request,
         @Res({ passthrough: true }) response: Response,

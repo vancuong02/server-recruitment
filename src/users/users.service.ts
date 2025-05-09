@@ -2,20 +2,19 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
-    UnauthorizedException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 
+import { Roles } from '@/types';
 import { IUser } from './users.interface';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserModel, UserDocument } from './schemas/user.schema';
+import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema';
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
-import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema';
-import { Roles } from '@/types';
 
 @Injectable()
 export class UsersService {
@@ -61,17 +60,16 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto) {
         await this.checkEmailExists(createUserDto.email);
-
         const ROLE_USER = Roles.NOMAL_USER;
-        const hashPassword = this.hashPassword(createUserDto.password);
 
-        const userData = {
-            ...createUserDto,
-            role: ROLE_USER,
-            password: hashPassword,
-        };
-        const newUser = await this.userModel.create(userData);
-        const role = await this.roleModel.findOne({ name: ROLE_USER });
+        const [newUser, role] = await Promise.all([
+            this.userModel.create({
+                ...createUserDto,
+                role: ROLE_USER,
+                password: this.hashPassword(createUserDto.password),
+            }),
+            this.roleModel.findOne({ name: ROLE_USER }).select('_id'),
+        ]);
 
         return {
             _id: newUser._id,
@@ -83,16 +81,13 @@ export class UsersService {
 
     async adminCreateUser(createUserDto: AdminCreateUserDto, user: IUser) {
         await this.checkEmailExists(createUserDto.email);
-        const hashPassword = this.hashPassword(createUserDto.password);
-        const userData = {
+
+        const { _id, email } = user;
+        const newUser = await this.userModel.create({
             ...createUserDto,
-            password: hashPassword,
-            createdBy: {
-                _id: user._id,
-                email: user.email,
-            },
-        };
-        const newUser = await this.userModel.create(userData);
+            password: this.hashPassword(createUserDto.password),
+            createdBy: { _id, email },
+        });
 
         return {
             _id: newUser._id,
@@ -102,19 +97,22 @@ export class UsersService {
 
     async updateProfile(updateUserDto: UpdateUserDto, user: IUser) {
         const { _id, email } = user;
-        await this.checkUserExists(user._id.toString());
-        const userUpdated = await this.userModel.findByIdAndUpdate(
-            _id,
-            {
-                ...updateUserDto,
-                updatedBy: { _id, email },
-            },
-            { new: true },
-        );
+        await this.checkUserExists(_id.toString());
 
-        return {
-            name: userUpdated.name,
-        };
+        const userUpdated = await this.userModel
+            .findByIdAndUpdate(
+                _id,
+                {
+                    $set: {
+                        ...updateUserDto,
+                        updatedBy: { _id, email },
+                    },
+                },
+                { new: true },
+            )
+            .select('name');
+
+        return { name: userUpdated.name };
     }
 
     async adminUpdate(
@@ -126,13 +124,14 @@ export class UsersService {
         if (updateUserDto.email) {
             await this.checkEmailExists(updateUserDto.email, id);
         }
+
+        const { _id, email } = user;
         await this.userModel.updateOne(
             { _id: id },
             {
-                ...updateUserDto,
-                updatedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    ...updateUserDto,
+                    updatedBy: { _id, email },
                 },
             },
         );
@@ -145,19 +144,24 @@ export class UsersService {
 
     async remove(id: string, user: IUser) {
         await this.checkUserExists(id);
-        // Kiểm tra user cần xóa có role ADMIN không
-        // const userToDelete = await this.userModel.findById(id);
-        // if (userToDelete?.role === 'ADMIN') {
-        //     throw new BadRequestException(
-        //         'Không thể xóa tài khoản có role ADMIN',
-        //     );
-        // }
+        const userToDelete = await this.userModel
+            .findById(id)
+            .populate('role', 'name')
+            .select('role');
+        if ((userToDelete?.role as any).name === Roles.SUPE_ADMIN) {
+            throw new BadRequestException(
+                `Không thể xóa tài khoản có role ${Roles.SUPE_ADMIN}`,
+            );
+        }
+
         await this.userModel.updateOne(
             { _id: id },
             {
-                deletedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    deletedBy: {
+                        _id: user._id,
+                        email: user.email,
+                    },
                 },
             },
         );
@@ -166,15 +170,18 @@ export class UsersService {
     }
 
     async findAll(page: number, pageSize: number) {
-        const defaultPage = page ? page : 1;
-        const defaultPageSize = pageSize ? pageSize : 10;
+        const defaultPage = page ? Number(page) : 1;
+        const defaultPageSize = pageSize ? Number(pageSize) : 10;
         const skip = (defaultPage - 1) * defaultPageSize;
 
         const [items, total] = await Promise.all([
             this.userModel
-                .find({}, { password: 0 })
-                .populate('role', '_id name')
-                .populate('companyId', '_id name logo')
+                .find()
+                .select('-password')
+                .populate([
+                    { path: 'role', select: '_id name' },
+                    { path: 'companyId', select: '_id name logo' },
+                ])
                 .skip(skip)
                 .limit(defaultPageSize),
             this.userModel.countDocuments(),
@@ -206,37 +213,41 @@ export class UsersService {
     async findById(id: string) {
         await this.checkUserExists(id);
         return await this.userModel
-            .findById(id, {
-                password: 0,
-            })
-            .populate('role', '_id name')
-            .populate('companyId', '_id name logo');
+            .findById(id)
+            .select('-password')
+            .populate([
+                { path: 'role', select: '_id name' },
+                { path: 'companyId', select: '_id name logo' },
+            ])
+            .lean();
     }
 
     async changePassword(
         id: Types.ObjectId,
         changePasswordDto: ChangePasswordDto,
     ) {
-        console.log('changePasswordDto: ', changePasswordDto);
-        console.log('id: ', id);
-
-        const user = await this.userModel.findById(id);
+        const user = await this.userModel
+            .findById(id)
+            .select('password')
+            .lean();
         if (!user) {
             throw new NotFoundException(
                 'Người dùng không tồn tại trong hệ thống',
             );
         }
 
-        const isValidPassword = compareSync(
-            changePasswordDto.currentPassword,
-            user.password,
-        );
-        if (!isValidPassword) {
+        if (!compareSync(changePasswordDto.currentPassword, user.password)) {
             throw new BadRequestException('Mật khẩu hiện tại không đúng');
         }
-        const hashPassword = this.hashPassword(changePasswordDto.newPassword);
-        user.password = hashPassword;
-        await user.save();
+
+        await this.userModel.updateOne(
+            { _id: id },
+            {
+                $set: {
+                    password: this.hashPassword(changePasswordDto.newPassword),
+                },
+            },
+        );
     }
 
     async updateTokenUser(_id: Types.ObjectId, refreshToken: string) {

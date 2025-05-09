@@ -1,5 +1,6 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { CompanyModel } from '@/companies/schemas/company.schema';
 
 export type JobDocument = HydratedDocument<JobModel>;
 
@@ -14,15 +15,17 @@ export class JobModel {
     @Prop()
     skills: string[];
 
-    @Prop({ type: Object })
-    company: {
-        _id: mongoose.Schema.Types.ObjectId;
-        name: string;
-        logo: string;
-    };
+    @Prop()
+    locations: string[];
 
     @Prop()
-    location: string;
+    levels: string[];
+
+    @Prop()
+    typeConstracts: string[];
+
+    @Prop()
+    typeWorks: string[];
 
     @Prop()
     salary: string;
@@ -31,10 +34,10 @@ export class JobModel {
     quantity: number;
 
     @Prop()
-    level: string;
-
-    @Prop()
     description: string;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CompanyModel.name })
+    companyId: mongoose.Schema.Types.ObjectId;
 
     @Prop()
     startDate: Date;

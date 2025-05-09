@@ -8,10 +8,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 
 import { IUser } from '@/users/users.interface';
+import { QueryCompanyDto } from './dto/query-company.dto';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CompanyModel, CompanyDocument } from './schemas/company.schema';
-import { QueryCompanyDto } from './dto/query-company.dto';
 
 @Injectable()
 export class CompaniesService {
@@ -31,12 +31,10 @@ export class CompaniesService {
     }
 
     async create(user: IUser, createCompanyDto: CreateCompanyDto) {
+        const { _id, email } = user;
         const company = await this.companyModel.create({
             ...createCompanyDto,
-            createdBy: {
-                _id: user._id,
-                email: user.email,
-            },
+            createdBy: { _id, email },
         });
 
         return {
@@ -47,13 +45,14 @@ export class CompaniesService {
 
     async update(user: IUser, id: string, updateCompanyDto: UpdateCompanyDto) {
         await this.checkCompanyExists(id);
+        const { _id, email } = user;
+
         await this.companyModel.updateOne(
             { _id: id },
             {
-                ...updateCompanyDto,
-                updatedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    ...updateCompanyDto,
+                    updatedBy: { _id, email },
                 },
             },
         );
@@ -64,29 +63,29 @@ export class CompaniesService {
     }
 
     async findAll(query: QueryCompanyDto) {
-        const { name, location, current, pageSize } = query;
-        const defaultCurrent = current ? current : 1;
-        const defaultPageSize = pageSize ? pageSize : 10;
-        const skip = (defaultCurrent - 1) * defaultPageSize;
+        const { name, location, current = 1, pageSize = 10 } = query;
+        const currentPage = Number(current);
+        const itemsPerPage = Number(pageSize);
+        const skip = (currentPage - 1) * itemsPerPage;
 
-        const condition = {};
-        if (name) {
-            condition['name'] = { $regex: new RegExp(name, 'i') };
-        }
-        if (location) {
-            condition['location'] = { $regex: new RegExp(location, 'i') };
-        }
+        const condition: Record<string, any> = {};
+        if (name) condition.name = { $regex: name, $options: 'i' };
+        if (location) condition.location = { $regex: location, $options: 'i' };
 
         const [items, total] = await Promise.all([
-            this.companyModel.find(condition).skip(skip).limit(defaultPageSize),
+            this.companyModel
+                .find(condition)
+                .skip(skip)
+                .limit(itemsPerPage)
+                .lean(),
             this.companyModel.countDocuments(condition),
         ]);
 
         return {
             meta: {
-                current: defaultCurrent,
-                pageSize: defaultPageSize,
-                pages: Math.ceil(total / defaultPageSize),
+                current: currentPage,
+                pageSize: itemsPerPage,
+                pages: Math.ceil(total / itemsPerPage),
                 total,
             },
             result: items,
@@ -95,17 +94,17 @@ export class CompaniesService {
 
     async findOne(id: string) {
         await this.checkCompanyExists(id);
-        return await this.companyModel.findById(id);
+        return await this.companyModel.findById(id).lean();
     }
 
     async remove(user: IUser, id: string) {
         await this.checkCompanyExists(id);
+        const { _id, email } = user;
         await this.companyModel.updateOne(
             { _id: id },
             {
-                deletedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    deletedBy: { _id, email },
                 },
             },
         );

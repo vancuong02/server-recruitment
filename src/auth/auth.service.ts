@@ -19,38 +19,34 @@ export class AuthService {
         private configService: ConfigService,
     ) {}
 
-    async validateUser(username: string, pass: string): Promise<any> {
+    async validateUser(username: string, pass: string) {
         try {
             const user = await this.usersService.findByEmail(username);
+            if (!user) return null;
 
-            if (!user) {
-                return null;
-            }
-
-            const isValidPassword = this.usersService.checkPassword(
+            const isValid = this.usersService.checkPassword(
                 pass,
                 user.password,
             );
-            if (!isValidPassword) return null;
+            if (!isValid) return null;
 
             const { password, ...result } = user;
             return result;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
 
     private generateAccessToken(user: IUser) {
         const { _id, name, email, role } = user;
-        const payload = {
+        return this.jwtService.sign({
             sub: 'access token',
             iss: 'from server',
             _id,
             name,
             email,
             role,
-        };
-        return this.jwtService.sign(payload);
+        });
     }
 
     private generateRefreshToken(user: IUser) {
@@ -73,14 +69,16 @@ export class AuthService {
 
     private async generateTokens(user: IUser, response: Response) {
         const { _id, email, name, role } = user;
-        const access_token = this.generateAccessToken(user);
-        const refresh_token = this.generateRefreshToken(user);
-
         const roleId = (role as any)._id as string;
 
-        const temp = await this.roleService.findOne(roleId);
+        const [access_token, refresh_token, permissions] = await Promise.all([
+            this.generateAccessToken(user),
+            this.generateRefreshToken(user),
+            this.roleService.findOne(roleId).then((role) => role.permissions),
+        ]);
 
         await this.usersService.updateTokenUser(_id, refresh_token);
+
         response.cookie('refresh_token', refresh_token, {
             httpOnly: true,
             maxAge: ms(
@@ -92,13 +90,7 @@ export class AuthService {
 
         return {
             access_token,
-            user: {
-                _id,
-                email,
-                name,
-                role,
-                permissions: temp.permissions,
-            },
+            user: { _id, email, name, role, permissions },
         };
     }
 
@@ -119,27 +111,28 @@ export class AuthService {
                 ),
             });
 
-            const checkExistsRefreshToken =
-                await this.usersService.findUserByToken(refreshToken);
-            if (!checkExistsRefreshToken) {
+            const tokenExists = await this.usersService.findUserByToken(
+                refreshToken,
+            );
+            if (!tokenExists) {
                 throw new UnauthorizedException('Refresh token không hợp lệ');
             }
 
-            const user: IUser = {
-                _id: decoded._id,
-                email: decoded.email,
-                name: decoded.name,
-                role: decoded.role,
-            };
-
-            return await this.generateTokens(user, response);
-        } catch (error) {
-            if (error instanceof UnauthorizedException) {
-                throw error;
-            }
-            throw new UnauthorizedException(
-                'Token không hợp lệ hoặc đã hết hạn',
+            return this.generateTokens(
+                {
+                    _id: decoded._id,
+                    email: decoded.email,
+                    name: decoded.name,
+                    role: decoded.role,
+                },
+                response,
             );
+        } catch (error) {
+            throw error instanceof UnauthorizedException
+                ? error
+                : new UnauthorizedException(
+                      'Token không hợp lệ hoặc đã hết hạn',
+                  );
         }
     }
 

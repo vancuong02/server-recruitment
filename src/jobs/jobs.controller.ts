@@ -39,6 +39,12 @@ export class JobsController {
         return this.jobsService.findOne(id);
     }
 
+    @Public()
+    @Get('by-company/:companyId')
+    findAllByCompany(@Param('companyId') companyId: string) {
+        return this.jobsService.findAllByCompany(companyId);
+    }
+
     @Patch(':id')
     @ResponseMessage('Cập nhật việc làm thành công')
     update(

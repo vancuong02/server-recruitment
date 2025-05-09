@@ -39,16 +39,10 @@ export class ResumesService {
                 {
                     status: 'PENDING',
                     updatedAt: new Date(),
-                    updatedBy: {
-                        _id,
-                        email,
-                    },
+                    updatedBy: { _id, email },
                 },
             ],
-            createdBy: {
-                _id,
-                email,
-            },
+            createdBy: { _id, email },
         });
 
         return {

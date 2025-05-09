@@ -31,12 +31,10 @@ export class JobsService {
     }
 
     async create(user: IUser, createJobDto: CreateJobDto) {
+        const { _id, email } = user;
         const job = await this.jobModel.create({
             ...createJobDto,
-            createdBy: {
-                _id: user._id,
-                email: user.email,
-            },
+            createdBy: { _id, email },
         });
         return {
             _id: job._id,
@@ -45,36 +43,42 @@ export class JobsService {
     }
 
     async findAll(query: QueryJobDto) {
-        const { current, pageSize, skills, location, level } = query;
-        const defaultCurrent = current ? current : 1;
-        const defaultPageSize = pageSize ? pageSize : 10;
-        const skip = (defaultCurrent - 1) * defaultPageSize;
+        const { current = 1, pageSize = 10, skills, locations, levels } = query;
+        const currentPage = Number(current);
+        const itemsPerPage = Number(pageSize);
+        const skip = (currentPage - 1) * itemsPerPage;
 
-        const condition: any = {};
+        const condition: Record<string, any> = {};
 
         if (skills) {
-            const skillArray = skills.split(',').map((skill) => skill.trim());
-            condition['skills'] = { $in: skillArray };
+            condition.skills = {
+                $in: skills.split(',').map((skill) => skill.trim()),
+            };
         }
 
-        if (location) {
-            condition['location'] = { $regex: new RegExp(location, 'i') };
+        if (locations) {
+            condition.location = { $regex: locations, $options: 'i' };
         }
 
-        if (level) {
-            condition['level'] = { $regex: new RegExp(level, 'i') };
+        if (levels) {
+            condition.level = { $regex: levels, $options: 'i' };
         }
 
         const [items, total] = await Promise.all([
-            this.jobModel.find(condition).skip(skip).limit(defaultPageSize),
+            this.jobModel
+                .find(condition)
+                .populate('companyId', '_id name logo')
+                .skip(skip)
+                .limit(itemsPerPage)
+                .lean(),
             this.jobModel.countDocuments(condition),
         ]);
 
         return {
             meta: {
-                current: defaultCurrent,
-                pageSize: defaultPageSize,
-                pages: Math.ceil(total / defaultPageSize),
+                current: currentPage,
+                pageSize: itemsPerPage,
+                pages: Math.ceil(total / itemsPerPage),
                 total,
             },
             result: items,
@@ -83,18 +87,28 @@ export class JobsService {
 
     async findOne(id: string) {
         await this.checkJobExists(id);
-        return await this.jobModel.findById(id);
+        return this.jobModel
+            .findById(id)
+            .populate('companyId', '_id name logo')
+            .lean();
+    }
+
+    async findAllByCompany(companyId: string) {
+        return this.jobModel
+            .find({ companyId })
+            .populate('companyId', '_id name logo')
+            .lean();
     }
 
     async update(id: string, updateJobDto: UpdateJobDto, user: IUser) {
         await this.checkJobExists(id);
+        const { _id, email } = user;
         await this.jobModel.updateOne(
             { _id: id },
             {
-                ...updateJobDto,
-                updatedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    ...updateJobDto,
+                    updatedBy: { _id, email },
                 },
             },
         );
@@ -107,12 +121,12 @@ export class JobsService {
 
     async remove(id: string, user: IUser) {
         await this.checkJobExists(id);
+        const { _id, email } = user;
         await this.jobModel.updateOne(
             { _id: id },
             {
-                deletedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    deletedBy: { _id, email },
                 },
             },
         );

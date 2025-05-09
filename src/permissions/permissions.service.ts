@@ -1,14 +1,15 @@
+import { Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { BadRequestException, Injectable } from '@nestjs/common';
+
+import {
+    PermissionModel,
+    PermissionDocument,
+} from './schemas/permission.schema';
+import { IUser } from '@/users/users.interface';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
-import { IUser } from '@/users/users.interface';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-    PermissionDocument,
-    PermissionModel,
-} from './schemas/permission.schema';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class PermissionsService {
@@ -17,11 +18,15 @@ export class PermissionsService {
         private permissionModel: SoftDeleteModel<PermissionDocument>,
     ) {}
 
-    private async checkExistsApiPathAndMethod(apiPath, method) {
-        const foundPermission = await this.permissionModel.findOne({
-            apiPath,
-            method,
-        });
+    private async checkExistsApiPathAndMethod(apiPath: string, method: string) {
+        const foundPermission = await this.permissionModel
+            .findOne({
+                apiPath,
+                method,
+            })
+            .select('_id')
+            .lean();
+
         if (foundPermission) {
             throw new BadRequestException(
                 `Quyền với apiPath ${apiPath} và phương thức ${method} đã tồn tại`,
@@ -40,16 +45,13 @@ export class PermissionsService {
     }
 
     async create(user: IUser, createPermissionDto: CreatePermissionDto) {
-        await this.checkExistsApiPathAndMethod(
-            createPermissionDto.apiPath,
-            createPermissionDto.method,
-        );
+        const { apiPath, method } = createPermissionDto;
+        const { _id, email } = user;
+        await this.checkExistsApiPathAndMethod(apiPath, method);
+
         const createdPermission = await this.permissionModel.create({
             ...createPermissionDto,
-            createdBy: {
-                _id: user._id,
-                email: user.email,
-            },
+            createdBy: { _id, email },
         });
 
         return {
@@ -58,21 +60,21 @@ export class PermissionsService {
         };
     }
 
-    async findAll(page: number, pageSize: number) {
-        const defaultPage = page ? page : 1;
-        const defaultPageSize = pageSize ? pageSize : 10;
-        const skip = (defaultPage - 1) * defaultPageSize;
+    async findAll(page = 1, pageSize = 10) {
+        const currentPage = Number(page);
+        const itemsPerPage = Number(pageSize);
+        const skip = (currentPage - 1) * itemsPerPage;
 
         const [items, total] = await Promise.all([
-            this.permissionModel.find().skip(skip).limit(defaultPageSize),
+            this.permissionModel.find().skip(skip).limit(itemsPerPage).lean(),
             this.permissionModel.countDocuments(),
         ]);
 
         return {
             meta: {
-                current: defaultPage,
-                pageSize: defaultPageSize,
-                pages: Math.ceil(total / defaultPageSize),
+                current: currentPage,
+                pageSize: itemsPerPage,
+                pages: Math.ceil(total / itemsPerPage),
                 total,
             },
             result: items,
@@ -81,7 +83,7 @@ export class PermissionsService {
 
     async findOne(id: string) {
         await this.checkExistsPermission(id);
-        return this.permissionModel.findById(id);
+        return this.permissionModel.findById(id).lean();
     }
 
     async update(
@@ -90,28 +92,30 @@ export class PermissionsService {
         updatePermissionDto: UpdatePermissionDto,
     ) {
         await this.checkExistsPermission(id);
+        const { _id, email } = user;
+        const { apiPath, method } = updatePermissionDto;
 
         // Chỉ check apiPath và method nếu có thay đổi
-        if (updatePermissionDto.apiPath && updatePermissionDto.method) {
-            const existingPermission = await this.permissionModel.findById(id);
+        if (apiPath && method) {
+            const existingPermission = await this.permissionModel
+                .findById(id)
+                .select('apiPath method')
+                .lean();
+
             if (
-                existingPermission.apiPath !== updatePermissionDto.apiPath ||
-                existingPermission.method !== updatePermissionDto.method
+                existingPermission.apiPath !== apiPath ||
+                existingPermission.method !== method
             ) {
-                await this.checkExistsApiPathAndMethod(
-                    updatePermissionDto.apiPath,
-                    updatePermissionDto.method,
-                );
+                await this.checkExistsApiPathAndMethod(apiPath, method);
             }
         }
 
         await this.permissionModel.updateOne(
             { _id: id },
             {
-                ...updatePermissionDto,
-                updatedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    ...updatePermissionDto,
+                    updatedBy: { _id, email },
                 },
             },
         );
@@ -124,12 +128,12 @@ export class PermissionsService {
 
     async remove(user: IUser, id: string) {
         await this.checkExistsPermission(id);
+        const { _id, email } = user;
         await this.permissionModel.updateOne(
             { _id: id },
             {
-                deletedBy: {
-                    _id: user._id,
-                    email: user.email,
+                $set: {
+                    deletedBy: { _id, email },
                 },
             },
         );
