@@ -39,10 +39,6 @@ export class CreateUserDto {
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
     @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
     gender: string;
-
-    @IsNotEmpty({ message: 'Vai trò không được để trống' })
-    @IsMongoId({ message: 'Vai trò phải là ObjectId' })
-    role: mongoose.Schema.Types.ObjectId;
 }
 
 export class AdminCreateUserDto {
@@ -66,10 +62,6 @@ export class AdminCreateUserDto {
     @IsNotEmpty({ message: 'Giới tính không được để trống' })
     @IsIn(['MALE', 'FEMALE', 'OTHER'], { message: 'Giới tính không hợp lệ' })
     gender: string;
-
-    @IsNotEmpty({ message: 'Vai trò không được để trống' })
-    @IsMongoId({ message: 'Vai trò phải là ObjectId' })
-    role: mongoose.Schema.Types.ObjectId;
 
     @IsNotEmpty({ message: 'Company không được để trống' })
     @IsMongoId({ message: 'Company phải là ObjectId' })

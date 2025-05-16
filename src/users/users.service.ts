@@ -62,20 +62,19 @@ export class UsersService {
         await this.checkEmailExists(createUserDto.email);
         const ROLE_USER = Roles.NOMAL_USER;
 
-        const [newUser, role] = await Promise.all([
-            this.userModel.create({
-                ...createUserDto,
-                role: ROLE_USER,
-                password: this.hashPassword(createUserDto.password),
-            }),
-            this.roleModel.findOne({ name: ROLE_USER }).select('_id'),
-        ]);
+        const roleId = (await this.roleModel.findOne({ name: ROLE_USER }))._id;
+
+        const newUser = await this.userModel.create({
+            ...createUserDto,
+            role: roleId,
+            password: this.hashPassword(createUserDto.password),
+        });
 
         return {
             _id: newUser._id,
             name: newUser.name,
             email: newUser.email,
-            role: role._id,
+            role: roleId,
         };
     }
 

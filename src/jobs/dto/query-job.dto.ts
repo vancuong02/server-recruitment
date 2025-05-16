@@ -4,4 +4,6 @@ export class QueryJobDto {
     skills?: string;
     locations?: string;
     levels?: string;
+    typeWorks?: string;
+    typeContracts?: string;
 }

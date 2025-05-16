@@ -43,7 +43,15 @@ export class JobsService {
     }
 
     async findAll(query: QueryJobDto) {
-        const { current = 1, pageSize = 10, skills, locations, levels } = query;
+        const {
+            current = 1,
+            pageSize = 10,
+            skills,
+            locations,
+            levels,
+            typeWorks,
+            typeContracts,
+        } = query;
         const currentPage = Number(current);
         const itemsPerPage = Number(pageSize);
         const skip = (currentPage - 1) * itemsPerPage;
@@ -57,11 +65,29 @@ export class JobsService {
         }
 
         if (locations) {
-            condition.location = { $regex: locations, $options: 'i' };
+            condition.locations = {
+                $in: locations.split(',').map((location) => location.trim()),
+            };
         }
 
         if (levels) {
-            condition.level = { $regex: levels, $options: 'i' };
+            condition.levels = {
+                $in: levels.split(',').map((level) => level.trim()),
+            };
+        }
+
+        if (typeWorks) {
+            condition.typeWorks = {
+                $in: typeWorks.split(',').map((typeWord) => typeWord.trim()),
+            };
+        }
+
+        if (typeContracts) {
+            condition.typeContracts = {
+                $in: typeContracts
+                    .split(',')
+                    .map((typeContract) => typeContract.trim()),
+            };
         }
 
         const [items, total] = await Promise.all([

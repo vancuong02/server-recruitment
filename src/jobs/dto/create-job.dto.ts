@@ -16,7 +16,7 @@ export class CreateJobDto {
     levels: string[];
 
     @IsNotEmpty({ message: 'Loại hợp đồng không được để trống' })
-    typeConstracts: string[];
+    typeContracts: string[];
 
     @IsNotEmpty({ message: 'Loại công việc không được để trống' })
     typeWorks: string[];

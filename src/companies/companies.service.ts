@@ -8,16 +8,23 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 
 import { IUser } from '@/users/users.interface';
-import { QueryCompanyDto } from './dto/query-company.dto';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CompanyModel, CompanyDocument } from './schemas/company.schema';
+import { JobDocument, JobModel } from '@/jobs/schemas/job.schema';
+import {
+    ICompanyWithJobCount,
+    IFindAllResponse,
+    QueryCompanyDto,
+} from './dto/interface-company.dto';
 
 @Injectable()
 export class CompaniesService {
     constructor(
         @InjectModel(CompanyModel.name)
         private companyModel: SoftDeleteModel<CompanyDocument>,
+        @InjectModel(JobModel.name)
+        private jobModel: SoftDeleteModel<JobDocument>,
     ) {}
 
     private async checkCompanyExists(id: string) {
@@ -62,7 +69,7 @@ export class CompaniesService {
         };
     }
 
-    async findAll(query: QueryCompanyDto) {
+    async findAll(query: QueryCompanyDto): Promise<IFindAllResponse> {
         const { name, location, current = 1, pageSize = 10 } = query;
         const currentPage = Number(current);
         const itemsPerPage = Number(pageSize);
@@ -74,12 +81,25 @@ export class CompaniesService {
 
         const [items, total] = await Promise.all([
             this.companyModel
-                .find(condition)
+                .find<CompanyDocument>(condition)
                 .skip(skip)
                 .limit(itemsPerPage)
                 .lean(),
             this.companyModel.countDocuments(condition),
         ]);
+
+        const companiesWithJobCount = (await Promise.all(
+            items.map(async (company) => {
+                const jobCount = await this.jobModel.countDocuments({
+                    companyId: company._id,
+                    isDeleted: false,
+                });
+                return {
+                    ...company,
+                    jobCount,
+                };
+            }),
+        )) as ICompanyWithJobCount[];
 
         return {
             meta: {
@@ -88,7 +108,7 @@ export class CompaniesService {
                 pages: Math.ceil(total / itemsPerPage),
                 total,
             },
-            result: items,
+            result: companiesWithJobCount,
         };
     }
 

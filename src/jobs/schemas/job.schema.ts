@@ -22,7 +22,7 @@ export class JobModel {
     levels: string[];
 
     @Prop()
-    typeConstracts: string[];
+    typeContracts: string[];
 
     @Prop()
     typeWorks: string[];

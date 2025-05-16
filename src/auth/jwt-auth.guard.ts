@@ -3,9 +3,11 @@ import {
     Injectable,
     ExecutionContext,
     UnauthorizedException,
+    ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -29,8 +31,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         return super.canActivate(context);
     }
 
-    handleRequest(err, user, info) {
+    handleRequest(err, user, info, context: ExecutionContext) {
         ('handleRequest');
+        const req: Request = context.switchToHttp().getRequest();
         // Kiểm tra cả err và info để xử lý lỗi
         if (err || info) {
             const error = err || info;
@@ -51,6 +54,20 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         // Kiểm tra user tồn tại
         if (!user) {
             throw new UnauthorizedException('Người dùng không tồn tại');
+        }
+
+        // Kiểm tra permissions
+        const targetMethod = req.method;
+        const targetEndpoint = req.route.path;
+        const permissions = user?.permissions || [];
+        const isAllowed = permissions.some((permission) => {
+            return (
+                permission.method === targetMethod &&
+                permission.apiPath === targetEndpoint
+            );
+        });
+        if (!isAllowed) {
+            throw new ForbiddenException('Không có quyền truy cập');
         }
 
         return user;
