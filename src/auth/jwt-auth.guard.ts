@@ -67,7 +67,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             );
         });
         if (!isAllowed) {
-            throw new ForbiddenException('Không có quyền truy cập');
+            throw new ForbiddenException(
+                'Bạn không có quyền truy cập chức năng này',
+            );
         }
 
         return user;

@@ -1,30 +1,21 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export type PermissionDocument = HydratedDocument<PermissionModel>;
+export type SubscriberDocument = HydratedDocument<SubscriberModel>;
 
 @Schema({
     timestamps: true,
-    collection: 'permissions',
+    collection: 'subcribers',
 })
-export class PermissionModel {
+export class SubscriberModel {
     @Prop()
     name: string;
 
     @Prop()
-    apiPath: string;
+    email: string;
 
     @Prop()
-    method: string;
-
-    @Prop()
-    module: string;
-
-    @Prop()
-    isDeleted: boolean;
-
-    @Prop()
-    deletedAt: Date;
+    skills: string[];
 
     @Prop({ type: Object })
     createdBy: {
@@ -43,12 +34,6 @@ export class PermissionModel {
         _id: mongoose.Schema.Types.ObjectId;
         email: string;
     };
-
-    @Prop()
-    createdAt: Date;
-
-    @Prop()
-    updatedAt: Date;
 }
 
-export const PermissionSchema = SchemaFactory.createForClass(PermissionModel);
+export const SubscriberSchema = SchemaFactory.createForClass(SubscriberModel);

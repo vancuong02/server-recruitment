@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <title>Công việc phù hợp với bạn</title>
+        <style>
+            .container { width: 100%; max-width: 600px; margin: 0 auto;
+            font-family: Arial, sans-serif; overflow: hidden;} .header {
+            background: linear-gradient(219deg, #54151c 0%, #121212 100%);
+            color: white; padding: 10px; text-align: center; } .content {
+            padding: 20px; background: #f8f9fa; } .job-item { background: white;
+            border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow:
+            0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: flex-start;
+            gap: 15px; } .job-title { color: #085bdd; font-size: 16px; margin: 0
+            0 10px 0; text-decoration: none; } .company-name { color: #333;
+            font-weight: bold; margin: 0 0 10px 0;font-size: 16px; } .job-info {
+            color: #666; font-size: 14px; margin: 10px 0; display: flex; gap:
+            10px; } .job-salary {color: #0edd00; margin-right: 12px;}
+            .view-button { display: inline-block; padding: 8px 16px; background:
+            #dc3545; color: white; text-decoration: none; border-radius: 4px;
+            margin-top: 10px; } .view-button:hover { background: #c82333; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color:
+            #6c757d; border-top: 1px solid #dee2e6; margin-top: 20px; } .footer
+            a { color: #dc3545; text-decoration: none; } .footer a:hover {
+            text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>Công việc phù hợp với bạn</h1>
+                <p>Chúng tôi tìm thấy
+                    {{totalJobs}}
+                    việc làm phù hợp với kỹ năng của bạn</p>
+            </div>
+            <div class='content'>
+                {{#each jobs}}
+                    <div class='job-item'>
+                        <div>
+                            <h2 class='job-title'>{{this.name}}</h2>
+                            <p class='company-name'>{{this.company_name}}</p>
+                            <div class='job-info'>
+                                <span class='job-salary'>💰
+                                    {{this.salary}}</span>
+                                <span>📍
+                                    {{#each this.locations}}{{this}}{{#unless
+                                            @last
+                                        }}, {{/unless}}{{/each}}</span>
+                            </div>
+                            <div
+                                style='
+                                    overflow: auto
+                                    max-width: 510px;
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 10px 4px;
+                                    margin-top: 10px;
+                                '
+                            >
+                                {{#each this.skills}}
+                                    <span
+                                        style='
+                                            display: inline-block;
+                                            background: #f0f0f0;
+                                            padding: 4px 8px;
+                                            border-radius: 4px;
+                                            font-size: 12px;
+                                            color: #666;
+                                            margin-right: 4px;
+                                            margin-bottom: 10px;
+                                        '
+                                    >{{this}}</span>
+                                {{/each}}
+                            </div>
+                            <a href='{{this.jobUrl}}' class='view-button'>Xem
+                                chi tiết</a>
+                        </div>
+                    </div>
+                {{/each}}
+
+                <div style='text-align: center; margin-top: 20px;'>
+                    <a href='{{viewAllJobsUrl}}' class='view-button'>Xem tất cả
+                        việc làm</a>
+                </div>
+            </div>
+            <div class='footer'>
+                <p>Email này được gửi tự động dựa trên đăng ký nhận thông báo
+                    việc làm của bạn.</p>
+                <p>Để ngừng nhận thông báo, vui lòng
+                    <a href='{{unsubscribeUrl}}'>nhấp vào đây</a></p>
+                <p>&copy; 2024 ITviec. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+</html>
