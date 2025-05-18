@@ -46,7 +46,7 @@ export class SubscribersService {
         return await this.subcriberModel.find().lean();
     }
 
-    async findOne(email: string) {
+    async findSkills(email: string) {
         return this.subcriberModel.findOne({ email });
     }
 

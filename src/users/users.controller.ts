@@ -70,11 +70,6 @@ export class UsersController {
         return this.usersService.findAll(+page, +pageSize);
     }
 
-    @Get('by-email/:email')
-    findByEmail(@Param('email') email: string) {
-        return this.usersService.findByEmail(email);
-    }
-
     @Get(':id')
     findById(@Param('id') id: string) {
         return this.usersService.findById(id);

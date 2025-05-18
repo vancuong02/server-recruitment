@@ -6,6 +6,7 @@ import { Controller, Post } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 
 import { convertSlug } from '@/utils';
+import { ResponseMessage } from '@/decorator/customize.decorator';
 import { JobDocument, JobModel } from '@/jobs/schemas/job.schema';
 import { SubscribersService } from '@/subscribers/subscribers.service';
 
@@ -20,6 +21,7 @@ export class MailController {
     ) {}
 
     @Post()
+    @ResponseMessage('Gửi email thành công')
     @Cron('0 0 8 * * *')
     async handleSendEmail() {
         try {

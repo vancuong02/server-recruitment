@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common';
 import helmet from 'helmet';
 import passport from 'passport';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
 import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -55,24 +53,8 @@ async function bootstrap() {
     //config cookies
     app.use(cookieParser());
 
-    //config session
-    app.use(
-        session({
-            secret: configService.get<string>('EXPRESS_SESSION_SECRET'),
-            resave: true,
-            saveUninitialized: false,
-            cookie: {
-                maxAge: 10 * 24 * 60 * 60 * 1000,
-            },
-            store: MongoStore.create({
-                mongoUrl: configService.get<string>('MONGODB_URI'),
-            }),
-        }),
-    );
-
     //config passport
     app.use(passport.initialize());
-    app.use(passport.session());
 
     // Config CORS
     app.enableCors({

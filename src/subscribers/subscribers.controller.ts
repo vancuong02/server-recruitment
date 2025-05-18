@@ -25,8 +25,8 @@ export class SubscribersController {
     }
 
     @Get('/skills')
-    findOne(@User() user: IUser) {
-        return this.subscribersService.findOne(user.email);
+    findSkills(@User() user: IUser) {
+        return this.subscribersService.findSkills(user.email);
     }
 
     @Patch()
