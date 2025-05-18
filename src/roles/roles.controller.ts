@@ -1,5 +1,4 @@
 import {
-    Controller,
     Get,
     Post,
     Body,
@@ -7,14 +6,17 @@ import {
     Param,
     Delete,
     Query,
+    Controller,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
 import { IUser } from '@/users/users.interface';
 import { User } from '@/decorator/user.decorator';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
 import { ResponseMessage } from '@/decorator/customize.decorator';
 
+@ApiTags('Roles')
 @Controller('roles')
 export class RolesController {
     constructor(private readonly rolesService: RolesService) {}

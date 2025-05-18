@@ -1,9 +1,9 @@
-import ms from 'ms';
 import {
     ValidationPipe,
     VersioningType,
     BadRequestException,
 } from '@nestjs/common';
+import helmet from 'helmet';
 import passport from 'passport';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
@@ -11,20 +11,27 @@ import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-
 import { AppModule } from './app.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { setupSwagger } from './config/swagger.config';
 import { TransformInterceptor } from './core/transform.interceptor';
+import { ThrottlerExceptionFilter } from './core/throttler-exception.filter';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+    // Config Helmet
+    app.use(helmet());
 
     // Config Guard
     const reflector = app.get(Reflector);
     app.useGlobalGuards(new JwtAuthGuard(reflector));
 
-    // Config interceptor
+    // Config Interceptor
     app.useGlobalInterceptors(new TransformInterceptor(reflector));
+
+    // Cogfig ThrottlerGuard
+    app.useGlobalFilters(new ThrottlerExceptionFilter());
 
     // Config Validation
     app.useGlobalPipes(
@@ -38,6 +45,7 @@ async function bootstrap() {
                 }));
                 return new BadRequestException(result);
             },
+            whitelist: true,
         }),
     );
 
@@ -54,9 +62,7 @@ async function bootstrap() {
             resave: true,
             saveUninitialized: false,
             cookie: {
-                maxAge:
-                    ms(configService.get<string>('EXPRESS_SESSION_COOKIE')) /
-                    1000,
+                maxAge: 10 * 24 * 60 * 60 * 1000,
             },
             store: MongoStore.create({
                 mongoUrl: configService.get<string>('MONGODB_URI'),
@@ -78,8 +84,11 @@ async function bootstrap() {
     app.setGlobalPrefix('api');
     app.enableVersioning({
         type: VersioningType.URI,
-        defaultVersion: ['1', '2'],
+        defaultVersion: ['1'],
     });
+
+    // Config Swagger
+    setupSwagger(app);
 
     await app.listen(port);
 }

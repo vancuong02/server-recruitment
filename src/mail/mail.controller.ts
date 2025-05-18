@@ -1,14 +1,15 @@
 import { Model } from 'mongoose';
 import { Cron } from '@nestjs/schedule';
+import { ApiTags } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Controller, Post } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 
 import { convertSlug } from '@/utils';
-import { ResponseMessage } from '@/decorator/customize.decorator';
 import { JobDocument, JobModel } from '@/jobs/schemas/job.schema';
 import { SubscribersService } from '@/subscribers/subscribers.service';
 
+@ApiTags('Mail')
 @Controller('mail')
 export class MailController {
     constructor(
@@ -19,8 +20,7 @@ export class MailController {
     ) {}
 
     @Post()
-    @ResponseMessage('Gửi jobs phù hợp với bạn')
-    @Cron('0 8 * * *')
+    @Cron('0 0 8 * * *')
     async handleSendEmail() {
         try {
             const subscribers = await this.subscriberService.findAll();

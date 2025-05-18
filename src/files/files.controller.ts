@@ -6,10 +6,12 @@ import {
     ParseFilePipeBuilder,
     UnprocessableEntityException,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { FilesService } from './files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ResponseMessage } from '@/decorator/customize.decorator';
 
+@ApiTags('Files')
 @Controller('files')
 export class FilesController {
     constructor(private readonly filesService: FilesService) {}

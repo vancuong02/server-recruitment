@@ -1,21 +1,24 @@
-import { Request, Response } from 'express';
 import {
     Body,
-    Controller,
     Get,
     Post,
     Req,
     Res,
     UseGuards,
+    Controller,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { IUser } from '@/users/users.interface';
 import { User } from '@/decorator/user.decorator';
 import { LocalAuthGuard } from './local-auth.guard';
-import { CreateUserDto } from '@/users/dto/create-user.dto';
+import { CreateUserDto, UserLoginDto } from '@/users/dto/create-user.dto';
 import { Public, ResponseMessage } from '@/decorator/customize.decorator';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) {}
@@ -24,6 +27,8 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @ResponseMessage('Đăng nhập thành công')
     @Post('login')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @ApiBody({ type: UserLoginDto })
     async handleLogin(
         @Req() req: Request,
         @Res({ passthrough: true }) response: Response,

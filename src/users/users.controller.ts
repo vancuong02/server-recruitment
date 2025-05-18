@@ -8,14 +8,16 @@ import {
     Delete,
     Controller,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IUser } from './users.interface';
 import { UsersService } from './users.service';
 import { User } from '@/decorator/user.decorator';
 import { AdminCreateUserDto } from './dto/create-user.dto';
-import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResponseMessage } from '@/decorator/customize.decorator';
+import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}

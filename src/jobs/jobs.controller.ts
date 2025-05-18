@@ -1,5 +1,4 @@
 import {
-    Controller,
     Get,
     Post,
     Body,
@@ -7,15 +6,18 @@ import {
     Param,
     Delete,
     Query,
+    Controller,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
+import { IUser } from '@/users/users.interface';
+import { User } from '@/decorator/user.decorator';
+import { QueryJobDto } from './dto/query-job.dto';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { User } from '@/decorator/user.decorator';
-import { IUser } from '@/users/users.interface';
 import { Public, ResponseMessage } from '@/decorator/customize.decorator';
-import { QueryJobDto } from './dto/query-job.dto';
 
+@ApiTags('Jobs')
 @Controller('jobs')
 export class JobsController {
     constructor(private readonly jobsService: JobsService) {}

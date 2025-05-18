@@ -1,4 +1,3 @@
-import ms from 'ms';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -61,9 +60,9 @@ export class AuthService {
         };
         return this.jwtService.sign(payload, {
             secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-            expiresIn:
-                ms(this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRE')) /
-                1000,
+            expiresIn: this.configService.get<string>(
+                'JWT_REFRESH_TOKEN_EXPIRE',
+            ),
         });
     }
 
@@ -81,9 +80,7 @@ export class AuthService {
 
         response.cookie('refresh_token', refresh_token, {
             httpOnly: true,
-            maxAge: ms(
-                this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRE'),
-            ),
+            maxAge: 10 * 24 * 60 * 60 * 1000, // 10 ngày
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
         });
@@ -111,9 +108,8 @@ export class AuthService {
                 ),
             });
 
-            const tokenExists = await this.usersService.findUserByToken(
-                refreshToken,
-            );
+            const tokenExists =
+                await this.usersService.findUserByToken(refreshToken);
             if (!tokenExists) {
                 throw new UnauthorizedException('Refresh token không hợp lệ');
             }

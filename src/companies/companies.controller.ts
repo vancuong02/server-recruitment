@@ -8,14 +8,16 @@ import {
     Query,
     Controller,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IUser } from '@/users/users.interface';
 import { User } from '@/decorator/user.decorator';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { Public, ResponseMessage } from '@/decorator/customize.decorator';
 import { QueryCompanyDto } from './dto/interface-company.dto';
+import { Public, ResponseMessage } from '@/decorator/customize.decorator';
 
+@ApiTags('Companies')
 @Controller('companies')
 export class CompaniesController {
     constructor(private readonly companiesService: CompaniesService) {}

@@ -1,5 +1,4 @@
 import {
-    Controller,
     Get,
     Post,
     Body,
@@ -7,13 +6,16 @@ import {
     Param,
     Delete,
     Query,
+    Controller,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { IUser } from '@/users/users.interface';
+import { User } from '@/decorator/user.decorator';
 import { ResumesService } from './resumes.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { ResponseMessage } from '@/decorator/customize.decorator';
-import { IUser } from '@/users/users.interface';
-import { User } from '@/decorator/user.decorator';
 
+@ApiTags('Resumes')
 @Controller('resumes')
 export class ResumesController {
     constructor(private readonly resumesService: ResumesService) {}

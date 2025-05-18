@@ -4,19 +4,10 @@ import {
     MinLength,
     IsNotEmpty,
     IsMongoId,
+    IsString,
 } from 'class-validator';
 import mongoose from 'mongoose';
-
-export class CompanyDto {
-    @IsNotEmpty({ message: 'ID công ty không được để trống' })
-    @IsMongoId({ message: 'ID công ty phải là ObjectId' })
-    _id: mongoose.Schema.Types.ObjectId;
-
-    @IsNotEmpty({ message: 'Tên công ty không được để trống' })
-    name: string;
-
-    logo: string;
-}
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
     @IsNotEmpty({ message: 'Tên không được để trống' })
@@ -66,4 +57,19 @@ export class AdminCreateUserDto {
     @IsNotEmpty({ message: 'Company không được để trống' })
     @IsMongoId({ message: 'Company phải là ObjectId' })
     companyId: mongoose.Schema.Types.ObjectId;
+}
+
+export class UserLoginDto {
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({ example: 'email@gmail.com', description: 'Tài khoản email' })
+    readonly username: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        example: '123456',
+        description: 'Mật khẩu',
+    })
+    readonly password: string;
 }

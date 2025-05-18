@@ -15,6 +15,8 @@ import { UserModel, UserDocument } from './schemas/user.schema';
 import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema';
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +26,9 @@ export class UsersService {
 
         @InjectModel(RoleModel.name)
         private roleModel: SoftDeleteModel<RoleDocument>,
+
+        private readonly mailerService: MailerService,
+        private configService: ConfigService,
     ) {}
 
     checkPassword(plain: string, hash: string) {

@@ -1,73 +1,153 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Tuyển Dụng - Job Portal
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Tên đề tài
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Hệ thống Tuyển dụng và Quản lý Công việc (Job Portal & Management System)
 
-## Description
+## Mô tả
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Một nền tảng tuyển dụng toàn diện được xây dựng bằng NestJS (Backend) và ReactJS (Frontend), cho phép kết nối nhà tuyển dụng và người tìm việc. Hệ thống cung cấp các tính năng quản lý công việc, ứng viên, và quy trình tuyển dụng.
 
-## Installation
+## Ứng dụng thực tế
 
-```bash
-$ npm install
-```
+-   Các công ty tuyển dụng có thể đăng tin và quản lý quy trình tuyển dụng
+-   Ứng viên có thể tìm kiếm việc làm và nộp hồ sơ
+-   Quản trị viên có thể quản lý toàn bộ hệ thống
+-   Tự động hóa quy trình tuyển dụng
+-   Phân tích và báo cáo dữ liệu tuyển dụng
 
-## Running the app
+## Các chức năng của ứng dụng
 
-```bash
-# development
-$ npm run start
+### 1. Quản lý người dùng (Users Module)
 
-# watch mode
-$ npm run start:dev
+-   Đăng ký, đăng nhập với JWT authentication
+-   Phân quyền người dùng (RBAC)
+-   Quản lý thông tin cá nhân
+-   Xác thực hai lớp
 
-# production mode
-$ npm run start:prod
-```
+### 2. Quản lý công ty (Companies Module)
 
-## Test
+-   Đăng ký thông tin công ty
+-   Quản lý profile công ty
+-   Theo dõi hoạt động tuyển dụng
 
-```bash
-# unit tests
-$ npm run test
+### 3. Quản lý công việc (Jobs Module)
 
-# e2e tests
-$ npm run test:e2e
+-   Đăng tin tuyển dụng
+-   Tìm kiếm việc làm
+-   Lọc và sắp xếp công việc
+-   Theo dõi trạng thái ứng tuyển
 
-# test coverage
-$ npm run test:cov
-```
+### 4. Quản lý hồ sơ (Resumes Module)
 
-## Support
+-   Upload và quản lý CV
+-   Theo dõi lịch sử ứng tuyển
+-   Đánh giá ứng viên
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 5. Quản lý quyền (Permissions & Roles Module)
 
-## Stay in touch
+-   Phân quyền chi tiết
+-   Quản lý vai trò người dùng
+-   Kiểm soát truy cập
 
--   Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
--   Website - [https://nestjs.com](https://nestjs.com/)
--   Twitter - [@nestframework](https://twitter.com/nestframework)
+### 6. Quản lý file (Files Module)
 
-## License
+-   Upload file với AWS S3
+-   Quản lý tài liệu
+-   Xử lý hình ảnh
 
-Nest is [MIT licensed](LICENSE).
+### 7. Hệ thống Email (Mail Module)
+
+-   Gửi email thông báo
+-   Email template với Handlebars
+-   Quản lý subscriber
+
+## Công nghệ sử dụng
+
+### Backend (NestJS)
+
+1. **NestJS Framework**
+
+-   Kiến trúc module
+-   Dependency injection
+-   Decorators và Pipes
+
+2. **Database & ORM**
+
+-   MongoDB với Mongoose
+-   Soft delete plugin
+-   Schema validation
+
+3. **Authentication & Authorization**
+
+-   JWT (JSON Web Tokens)
+-   Passport.js
+-   Session management
+
+4. **API Documentation**
+
+-   Swagger/OpenAPI
+-   API versioning
+-   Response transformation
+
+5. **Security**
+
+-   Helmet middleware
+-   CORS protection
+-   Rate limiting (Throttler)
+
+6. **File Storage**
+
+-   AWS S3 integration
+-   Multer middleware
+-   File streaming
+
+7. **Email Service**
+
+-   Nodemailer
+-   Handlebars templates
+-   Queue system
+
+8. **Monitoring & Health**
+
+-   Health checks
+-   Performance monitoring
+-   Error tracking
+
+### Frontend (ReactJS)
+
+1. **UI Framework**
+
+-   Ant Design
+-   Pro Components
+-   Custom themes
+
+2. **State Management**
+
+-   Redux Toolkit
+-   Redux Persist
+-   Async state handling
+
+3. **Routing & Navigation**
+
+-   React Router DOM
+-   Protected routes
+-   Navigation guards
+
+4. **Form Handling**
+
+-   Form validation
+-   File upload
+-   Rich text editor (TinyMCE)
+
+5. **API Integration**
+
+-   Axios
+-   Request/Response interceptors
+-   Error handling
+
+6. **Performance Optimization**
+
+-   Code splitting
+-   Lazy loading
+-   Bundle optimization

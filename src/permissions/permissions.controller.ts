@@ -8,13 +8,15 @@ import {
     Delete,
     Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { IUser } from '@/users/users.interface';
+import { User } from '@/decorator/user.decorator';
 import { PermissionsService } from './permissions.service';
+import { ResponseMessage } from '@/decorator/customize.decorator';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
-import { User } from '@/decorator/user.decorator';
-import { IUser } from '@/users/users.interface';
-import { ResponseMessage } from '@/decorator/customize.decorator';
 
+@ApiTags('Permissions')
 @Controller('permissions')
 export class PermissionsController {
     constructor(private readonly permissionsService: PermissionsService) {}
