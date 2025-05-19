@@ -1,8 +1,8 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { PermissionModel } from '@/permissions/schemas/permission.schema';
+import mongoose, { HydratedDocument } from 'mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { PermissionModel } from '@/permissions/schemas/permission.schema'
 
-export type RoleDocument = HydratedDocument<RoleModel>;
+export type RoleDocument = HydratedDocument<RoleModel>
 
 @Schema({
     timestamps: true,
@@ -10,46 +10,46 @@ export type RoleDocument = HydratedDocument<RoleModel>;
 })
 export class RoleModel {
     @Prop()
-    name: string;
+    name: string
 
     @Prop()
-    description: string;
+    description: string
 
     @Prop()
-    isActive: boolean;
+    isActive: boolean
 
     @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: PermissionModel.name })
-    permissions: PermissionModel[];
+    permissions: PermissionModel[]
 
     @Prop()
-    isDeleted: boolean;
+    isDeleted: boolean
 
     @Prop()
-    deletedAt: Date;
+    deletedAt: Date
 
     @Prop({ type: Object })
     createdBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     updatedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     deletedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop()
-    createdAt: Date;
+    createdAt: Date
 
     @Prop()
-    updatedAt: Date;
+    updatedAt: Date
 }
 
-export const RoleSchema = SchemaFactory.createForClass(RoleModel);
+export const RoleSchema = SchemaFactory.createForClass(RoleModel)

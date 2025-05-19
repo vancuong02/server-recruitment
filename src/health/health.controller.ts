@@ -4,10 +4,10 @@ import {
     HttpHealthIndicator,
     MemoryHealthIndicator,
     MongooseHealthIndicator,
-} from '@nestjs/terminus';
-import { ApiTags } from '@nestjs/swagger';
-import { Controller, Get } from '@nestjs/common';
-import { Public } from '@/decorator/customize.decorator';
+} from '@nestjs/terminus'
+import { ApiTags } from '@nestjs/swagger'
+import { Controller, Get } from '@nestjs/common'
+import { Public } from '@/decorator/customize.decorator'
 
 @ApiTags('Health')
 @Controller('health')
@@ -33,6 +33,6 @@ export class HealthController {
 
             // Kiểm tra các API endpoint
             () => this.http.pingCheck('nestjs-docs', 'https://docs.nestjs.com'),
-        ]);
+        ])
     }
 }

@@ -1,7 +1,7 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 
-export type CompanyDocument = HydratedDocument<CompanyModel>;
+export type CompanyDocument = HydratedDocument<CompanyModel>
 
 @Schema({
     timestamps: true,
@@ -9,46 +9,46 @@ export type CompanyDocument = HydratedDocument<CompanyModel>;
 })
 export class CompanyModel {
     @Prop()
-    name: string;
+    name: string
 
     @Prop()
-    logo: string;
+    logo: string
 
     @Prop()
-    location: string;
+    location: string
 
     @Prop()
-    description: string;
+    description: string
 
     @Prop({ type: Object })
     createdBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     updatedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     deletedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop()
-    isDeleted: boolean;
+    isDeleted: boolean
 
     @Prop()
-    deletedAt: Date;
+    deletedAt: Date
 
     @Prop()
-    createdAt: Date;
+    createdAt: Date
 
     @Prop()
-    updatedAt: Date;
+    updatedAt: Date
 }
 
-export const CompanySchema = SchemaFactory.createForClass(CompanyModel);
+export const CompanySchema = SchemaFactory.createForClass(CompanyModel)

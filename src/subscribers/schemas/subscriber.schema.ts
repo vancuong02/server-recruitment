@@ -1,7 +1,7 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 
-export type SubscriberDocument = HydratedDocument<SubscriberModel>;
+export type SubscriberDocument = HydratedDocument<SubscriberModel>
 
 @Schema({
     timestamps: true,
@@ -9,31 +9,31 @@ export type SubscriberDocument = HydratedDocument<SubscriberModel>;
 })
 export class SubscriberModel {
     @Prop()
-    name: string;
+    name: string
 
     @Prop()
-    email: string;
+    email: string
 
     @Prop()
-    skills: string[];
+    skills: string[]
 
     @Prop({ type: Object })
     createdBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     updatedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     deletedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 }
 
-export const SubscriberSchema = SchemaFactory.createForClass(SubscriberModel);
+export const SubscriberSchema = SchemaFactory.createForClass(SubscriberModel)

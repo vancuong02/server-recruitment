@@ -1,14 +1,11 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose'
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose'
+import { BadGatewayException, Injectable } from '@nestjs/common'
 
-import {
-    SubscriberModel,
-    SubscriberDocument,
-} from './schemas/subscriber.schema';
-import { IUser } from '@/users/users.interface';
-import { CreateSubscriberDto } from './dto/create-subscriber.dto';
-import { UpdateSubscriberDto } from './dto/update-subscriber.dto';
+import { SubscriberModel, SubscriberDocument } from './schemas/subscriber.schema'
+import { IUser } from '@/users/users.interface'
+import { CreateSubscriberDto } from './dto/create-subscriber.dto'
+import { UpdateSubscriberDto } from './dto/update-subscriber.dto'
 
 @Injectable()
 export class SubscribersService {
@@ -18,15 +15,13 @@ export class SubscribersService {
     ) {}
 
     async create(user: IUser, createSubscriberDto: CreateSubscriberDto) {
-        const { email } = createSubscriberDto;
+        const { email } = createSubscriberDto
 
         const checkExistEmail = await this.subcriberModel.findOne({
             email: createSubscriberDto.email,
-        });
+        })
         if (checkExistEmail) {
-            throw new BadGatewayException(
-                `Email: ${email} đã tồn tại trong hệ thống`,
-            );
+            throw new BadGatewayException(`Email: ${email} đã tồn tại trong hệ thống`)
         }
 
         const newSubscriber = await this.subcriberModel.create({
@@ -35,23 +30,23 @@ export class SubscribersService {
                 _id: user._id,
                 email: user.email,
             },
-        });
+        })
         return {
             _id: newSubscriber?._id,
             createdAt: new Date(),
-        };
+        }
     }
 
     async findAll() {
-        return await this.subcriberModel.find().lean();
+        return await this.subcriberModel.find().lean()
     }
 
     async findSkills(email: string) {
-        return this.subcriberModel.findOne({ email });
+        return this.subcriberModel.findOne({ email })
     }
 
     async update(user: IUser, updateSubscriberDto: UpdateSubscriberDto) {
-        const { _id, email } = user;
+        const { _id, email } = user
         await this.subcriberModel.updateOne(
             { email },
             {
@@ -61,16 +56,16 @@ export class SubscribersService {
                     email,
                 },
             },
-        );
+        )
 
         return {
             email,
             updatedAt: new Date(),
-        };
+        }
     }
 
     async remove(user: IUser) {
-        const { _id, email } = user;
+        const { _id, email } = user
         await this.subcriberModel.updateOne(
             { email },
             {
@@ -79,12 +74,12 @@ export class SubscribersService {
                     email,
                 },
             },
-        );
-        await this.subcriberModel.softDelete({ email });
+        )
+        await this.subcriberModel.softDelete({ email })
 
         return {
             email,
             deletedAt: new Date(),
-        };
+        }
     }
 }

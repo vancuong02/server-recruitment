@@ -1,15 +1,15 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty } from 'class-validator'
 
 export class CreatePermissionDto {
     @IsNotEmpty({ message: 'Tên permission không được để trống' })
-    name: string;
+    name: string
 
     @IsNotEmpty({ message: 'API path không được để trống' })
-    apiPath: string;
+    apiPath: string
 
     @IsNotEmpty({ message: 'Method không được để trống' })
-    method: string;
+    method: string
 
     @IsNotEmpty({ message: 'Module không được để trống' })
-    module: string;
+    module: string
 }

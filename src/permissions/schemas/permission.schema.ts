@@ -1,7 +1,7 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 
-export type PermissionDocument = HydratedDocument<PermissionModel>;
+export type PermissionDocument = HydratedDocument<PermissionModel>
 
 @Schema({
     timestamps: true,
@@ -9,46 +9,46 @@ export type PermissionDocument = HydratedDocument<PermissionModel>;
 })
 export class PermissionModel {
     @Prop()
-    name: string;
+    name: string
 
     @Prop()
-    apiPath: string;
+    apiPath: string
 
     @Prop()
-    method: string;
+    method: string
 
     @Prop()
-    module: string;
+    module: string
 
     @Prop()
-    isDeleted: boolean;
+    isDeleted: boolean
 
     @Prop()
-    deletedAt: Date;
+    deletedAt: Date
 
     @Prop({ type: Object })
     createdBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     updatedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     deletedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop()
-    createdAt: Date;
+    createdAt: Date
 
     @Prop()
-    updatedAt: Date;
+    updatedAt: Date
 }
 
-export const PermissionSchema = SchemaFactory.createForClass(PermissionModel);
+export const PermissionSchema = SchemaFactory.createForClass(PermissionModel)

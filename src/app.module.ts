@@ -1,23 +1,23 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ScheduleModule } from '@nestjs/schedule';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { AppController } from './app.controller';
-import { UsersModule } from './users/users.module';
-import { CompaniesModule } from './companies/companies.module';
-import { JobsModule } from './jobs/jobs.module';
-import { ResumesModule } from './resumes/resumes.module';
-import { PermissionsModule } from './permissions/permissions.module';
-import { RolesModule } from './roles/roles.module';
-import { FilesModule } from './files/files.module';
-import { SubscribersModule } from './subscribers/subscribers.module';
-import { MailModule } from './mail/mail.module';
-import { APP_GUARD } from '@nestjs/core';
-import { HealthModule } from './health/health.module';
+import { Module } from '@nestjs/common'
+import { MongooseModule } from '@nestjs/mongoose'
+import { ScheduleModule } from '@nestjs/schedule'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { softDeletePlugin } from 'soft-delete-plugin-mongoose'
+import { AppService } from './app.service'
+import { AuthModule } from './auth/auth.module'
+import { AppController } from './app.controller'
+import { UsersModule } from './users/users.module'
+import { CompaniesModule } from './companies/companies.module'
+import { JobsModule } from './jobs/jobs.module'
+import { ResumesModule } from './resumes/resumes.module'
+import { PermissionsModule } from './permissions/permissions.module'
+import { RolesModule } from './roles/roles.module'
+import { FilesModule } from './files/files.module'
+import { SubscribersModule } from './subscribers/subscribers.module'
+import { MailModule } from './mail/mail.module'
+import { APP_GUARD } from '@nestjs/core'
+import { HealthModule } from './health/health.module'
 
 @Module({
     imports: [
@@ -36,8 +36,8 @@ import { HealthModule } from './health/health.module';
             useFactory: async (configService: ConfigService) => ({
                 uri: configService.get<string>('MONGODB_URI'),
                 connectionFactory: (connection) => {
-                    connection.plugin(softDeletePlugin);
-                    return connection;
+                    connection.plugin(softDeletePlugin)
+                    return connection
                 },
             }),
             inject: [ConfigService],

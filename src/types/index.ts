@@ -1,14 +1,14 @@
-import { Types } from 'mongoose';
+import { Types } from 'mongoose'
 
 export interface TokenPayload {
-    sub: string;
-    iss: string;
-    _id: Types.ObjectId;
-    name: string;
-    email: string;
-    role: Types.ObjectId;
-    iat: number;
-    exp: number;
+    sub: string
+    iss: string
+    _id: Types.ObjectId
+    name: string
+    email: string
+    role: Types.ObjectId
+    iat: number
+    exp: number
 }
 
 export enum Roles {

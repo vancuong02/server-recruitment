@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { CompaniesService } from './companies.service';
-import { CompaniesController } from './companies.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { CompanyModel, CompanySchema } from './schemas/company.schema';
-import { JobModel, JobSchema } from '@/jobs/schemas/job.schema';
+import { Module } from '@nestjs/common'
+import { CompaniesService } from './companies.service'
+import { CompaniesController } from './companies.controller'
+import { MongooseModule } from '@nestjs/mongoose'
+import { CompanyModel, CompanySchema } from './schemas/company.schema'
+import { JobModel, JobSchema } from '@/jobs/schemas/job.schema'
 
 @Module({
     controllers: [CompaniesController],

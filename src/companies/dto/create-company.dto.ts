@@ -1,14 +1,14 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty } from 'class-validator'
 
 export class CreateCompanyDto {
     @IsNotEmpty({ message: 'Tên công ty không được để trống' })
-    name: string;
+    name: string
 
     @IsNotEmpty({ message: 'Logo không được để trống' })
-    logo: string;
+    logo: string
 
     @IsNotEmpty({ message: 'Địa chỉ không được để trống' })
-    location: string;
+    location: string
 
-    description: string;
+    description: string
 }

@@ -5,11 +5,11 @@ import {
     UseInterceptors,
     ParseFilePipeBuilder,
     UnprocessableEntityException,
-} from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { FilesService } from './files.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ResponseMessage } from '@/decorator/customize.decorator';
+} from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
+import { FilesService } from './files.service'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ResponseMessage } from '@/decorator/customize.decorator'
 
 @ApiTags('Files')
 @Controller('files')
@@ -23,8 +23,7 @@ export class FilesController {
         @UploadedFile(
             new ParseFilePipeBuilder()
                 .addFileTypeValidator({
-                    fileType:
-                        /^(image\/(jpeg|png|gif|webp)|application\/(pdf|msword)|text\/plain)$/,
+                    fileType: /^(image\/(jpeg|png|gif|webp)|application\/(pdf|msword)|text\/plain)$/,
                 })
                 .addMaxSizeValidator({
                     maxSize: 1024 * 1024 * 5,
@@ -32,16 +31,12 @@ export class FilesController {
                 })
                 .build({
                     exceptionFactory: (error) => {
-                        if (
-                            error.includes(
-                                'Validation failed (expected type is',
-                            )
-                        ) {
+                        if (error.includes('Validation failed (expected type is')) {
                             throw new UnprocessableEntityException(
                                 'Chỉ chấp nhận các định dạng: jpeg, png, gif, webp, pdf, doc, txt',
-                            );
+                            )
                         } else {
-                            throw new UnprocessableEntityException(error);
+                            throw new UnprocessableEntityException(error)
                         }
                     },
                 }),
@@ -50,6 +45,6 @@ export class FilesController {
     ) {
         return {
             fileUrl: (file as any).location,
-        };
+        }
     }
 }

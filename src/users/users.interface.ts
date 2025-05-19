@@ -1,8 +1,8 @@
-import { Types } from 'mongoose';
+import { Types } from 'mongoose'
 
 export interface IUser {
-    _id: Types.ObjectId;
-    name: string;
-    email: string;
-    role: Types.ObjectId;
+    _id: Types.ObjectId
+    name: string
+    email: string
+    role: Types.ObjectId
 }

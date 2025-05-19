@@ -1,62 +1,48 @@
-import {
-    Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    Delete,
-    Query,
-    Controller,
-} from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { IUser } from '@/users/users.interface';
-import { User } from '@/decorator/user.decorator';
-import { CompaniesService } from './companies.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
-import { QueryCompanyDto } from './dto/interface-company.dto';
-import { Public, ResponseMessage } from '@/decorator/customize.decorator';
+import { Get, Post, Body, Patch, Param, Delete, Query, Controller } from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
+import { SkipThrottle } from '@nestjs/throttler'
+import { IUser } from '@/users/users.interface'
+import { User } from '@/decorator/user.decorator'
+import { CompaniesService } from './companies.service'
+import { CreateCompanyDto } from './dto/create-company.dto'
+import { UpdateCompanyDto } from './dto/update-company.dto'
+import { QueryCompanyDto } from './dto/interface-company.dto'
+import { Public, ResponseMessage } from '@/decorator/customize.decorator'
 
 @ApiTags('Companies')
+@SkipThrottle()
 @Controller('companies')
 export class CompaniesController {
     constructor(private readonly companiesService: CompaniesService) {}
 
     @Post()
     @ResponseMessage('Tạo công ty thành công')
-    async create(
-        @User() user: IUser,
-        @Body() createCompanyDto: CreateCompanyDto,
-    ) {
-        return this.companiesService.create(user, createCompanyDto);
+    async create(@User() user: IUser, @Body() createCompanyDto: CreateCompanyDto) {
+        return this.companiesService.create(user, createCompanyDto)
     }
 
     @Public()
     @Get()
     @ResponseMessage('Lấy danh sách công ty thành công')
     findAll(@Query() query: QueryCompanyDto) {
-        return this.companiesService.findAll(query);
+        return this.companiesService.findAll(query)
     }
 
     @Public()
     @Get(':id')
     findOne(@Param('id') id: string) {
-        return this.companiesService.findOne(id);
+        return this.companiesService.findOne(id)
     }
 
     @Patch(':id')
     @ResponseMessage('Cập nhật công ty thành công')
-    update(
-        @User() user: IUser,
-        @Param('id') id: string,
-        @Body() updateCompanyDto: UpdateCompanyDto,
-    ) {
-        return this.companiesService.update(user, id, updateCompanyDto);
+    update(@User() user: IUser, @Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
+        return this.companiesService.update(user, id, updateCompanyDto)
     }
 
     @Delete(':id')
     @ResponseMessage('Xóa công ty thành công')
     remove(@User() user: IUser, @Param('id') id: string) {
-        return this.companiesService.remove(user, id);
+        return this.companiesService.remove(user, id)
     }
 }

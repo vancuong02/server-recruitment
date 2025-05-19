@@ -1,5 +1,5 @@
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { INestApplication } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { INestApplication } from '@nestjs/common'
 
 export function setupSwagger(app: INestApplication) {
     const options = new DocumentBuilder()
@@ -25,12 +25,12 @@ export function setupSwagger(app: INestApplication) {
         .addTag('Files', 'Các API liên quan đến tập tin')
         .addTag('Mail', 'Các API liên quan đến email')
         .addTag('Health', 'Các API liên quan đến tình trạng hệ thống')
-        .build();
+        .build()
 
-    const document = SwaggerModule.createDocument(app, options);
+    const document = SwaggerModule.createDocument(app, options)
     SwaggerModule.setup('api-docs', app, document, {
         swaggerOptions: {
             persistAuthorization: true,
         },
-    });
+    })
 }

@@ -1,16 +1,13 @@
-import { join } from 'path';
-import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { MailController } from './mail.controller';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import {
-    SubscriberModel,
-    SubscriberSchema,
-} from '@/subscribers/schemas/subscriber.schema';
-import { JobModel, JobSchema } from '@/jobs/schemas/job.schema';
-import { SubscribersService } from '@/subscribers/subscribers.service';
+import { join } from 'path'
+import { Module } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { MongooseModule } from '@nestjs/mongoose'
+import { MailController } from './mail.controller'
+import { MailerModule } from '@nestjs-modules/mailer'
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
+import { SubscriberModel, SubscriberSchema } from '@/subscribers/schemas/subscriber.schema'
+import { JobModel, JobSchema } from '@/jobs/schemas/job.schema'
+import { SubscribersService } from '@/subscribers/subscribers.service'
 
 @Module({
     imports: [
@@ -25,9 +22,7 @@ import { SubscribersService } from '@/subscribers/subscribers.service';
                     },
                 },
                 defaults: {
-                    from: `${configService.get<string>(
-                        'FROM_NAME',
-                    )} <${configService.get<string>('EMAIL_USERNAME')}>`,
+                    from: `${configService.get<string>('FROM_NAME')} <${configService.get<string>('EMAIL_USERNAME')}>`,
                 },
                 template: {
                     dir: join(__dirname, 'templates'),

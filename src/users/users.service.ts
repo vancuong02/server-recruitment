@@ -1,22 +1,18 @@
-import {
-    Injectable,
-    NotFoundException,
-    BadRequestException,
-} from '@nestjs/common';
-import { Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Types } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { SoftDeleteModel } from 'soft-delete-plugin-mongoose'
+import { genSaltSync, hashSync, compareSync } from 'bcryptjs'
 
-import { Roles } from '@/types';
-import { IUser } from './users.interface';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { UserModel, UserDocument } from './schemas/user.schema';
-import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema';
-import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto';
-import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto';
-import { MailerService } from '@nestjs-modules/mailer';
-import { ConfigService } from '@nestjs/config';
+import { Roles } from '@/types'
+import { IUser } from './users.interface'
+import { ChangePasswordDto } from './dto/change-password.dto'
+import { UserModel, UserDocument } from './schemas/user.schema'
+import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema'
+import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto'
+import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto'
+import { MailerService } from '@nestjs-modules/mailer'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class UsersService {
@@ -32,18 +28,16 @@ export class UsersService {
     ) {}
 
     checkPassword(plain: string, hash: string) {
-        return compareSync(plain, hash);
+        return compareSync(plain, hash)
     }
 
     private async checkUserExists(id: string) {
         if (!Types.ObjectId.isValid(id)) {
-            throw new BadRequestException('Id người dùng không hợp lệ');
+            throw new BadRequestException('Id người dùng không hợp lệ')
         }
-        const user = await this.userModel.findOne({ _id: id });
+        const user = await this.userModel.findOne({ _id: id })
         if (!user) {
-            throw new NotFoundException(
-                'Người dùng không tồn tại trong hệ thống',
-            );
+            throw new NotFoundException('Người dùng không tồn tại trong hệ thống')
         }
     }
 
@@ -51,57 +45,57 @@ export class UsersService {
         const query = {
             email,
             ...(excludeUserId && { _id: { $ne: excludeUserId } }),
-        };
-        const existingUser = await this.userModel.findOne(query);
+        }
+        const existingUser = await this.userModel.findOne(query)
         if (existingUser) {
-            throw new BadRequestException('Email đã tồn tại trong hệ thống');
+            throw new BadRequestException('Email đã tồn tại trong hệ thống')
         }
     }
 
     private hashPassword(password: string) {
-        const salt = genSaltSync(10);
-        return hashSync(password, salt);
+        const salt = genSaltSync(10)
+        return hashSync(password, salt)
     }
 
     async create(createUserDto: CreateUserDto) {
-        await this.checkEmailExists(createUserDto.email);
-        const ROLE_USER = Roles.NOMAL_USER;
+        await this.checkEmailExists(createUserDto.email)
+        const ROLE_USER = Roles.NOMAL_USER
 
-        const roleId = (await this.roleModel.findOne({ name: ROLE_USER }))._id;
+        const roleId = (await this.roleModel.findOne({ name: ROLE_USER }))._id
 
         const newUser = await this.userModel.create({
             ...createUserDto,
             role: roleId,
             password: this.hashPassword(createUserDto.password),
-        });
+        })
 
         return {
             _id: newUser._id,
             name: newUser.name,
             email: newUser.email,
             role: roleId,
-        };
+        }
     }
 
     async adminCreateUser(createUserDto: AdminCreateUserDto, user: IUser) {
-        await this.checkEmailExists(createUserDto.email);
+        await this.checkEmailExists(createUserDto.email)
 
-        const { _id, email } = user;
+        const { _id, email } = user
         const newUser = await this.userModel.create({
             ...createUserDto,
             password: this.hashPassword(createUserDto.password),
             createdBy: { _id, email },
-        });
+        })
 
         return {
             _id: newUser._id,
             createdAt: newUser.createdAt,
-        };
+        }
     }
 
     async updateProfile(updateUserDto: UpdateUserDto, user: IUser) {
-        const { _id, email } = user;
-        await this.checkUserExists(_id.toString());
+        const { _id, email } = user
+        await this.checkUserExists(_id.toString())
 
         const userUpdated = await this.userModel
             .findByIdAndUpdate(
@@ -114,22 +108,18 @@ export class UsersService {
                 },
                 { new: true },
             )
-            .select('name');
+            .select('name')
 
-        return { name: userUpdated.name };
+        return { name: userUpdated.name }
     }
 
-    async adminUpdate(
-        id: string,
-        updateUserDto: AdminUpdateUserDto,
-        user: IUser,
-    ) {
-        await this.checkUserExists(id);
+    async adminUpdate(id: string, updateUserDto: AdminUpdateUserDto, user: IUser) {
+        await this.checkUserExists(id)
         if (updateUserDto.email) {
-            await this.checkEmailExists(updateUserDto.email, id);
+            await this.checkEmailExists(updateUserDto.email, id)
         }
 
-        const { _id, email } = user;
+        const { _id, email } = user
         await this.userModel.updateOne(
             { _id: id },
             {
@@ -138,24 +128,19 @@ export class UsersService {
                     updatedBy: { _id, email },
                 },
             },
-        );
+        )
 
         return {
             _id: id,
             updatedAt: new Date(),
-        };
+        }
     }
 
     async remove(id: string, user: IUser) {
-        await this.checkUserExists(id);
-        const userToDelete = await this.userModel
-            .findById(id)
-            .populate('role', 'name')
-            .select('role');
+        await this.checkUserExists(id)
+        const userToDelete = await this.userModel.findById(id).populate('role', 'name').select('role')
         if ((userToDelete?.role as any).name === Roles.SUPE_ADMIN) {
-            throw new BadRequestException(
-                `Không thể xóa tài khoản có role ${Roles.SUPE_ADMIN}`,
-            );
+            throw new BadRequestException(`Không thể xóa tài khoản có role ${Roles.SUPE_ADMIN}`)
         }
 
         await this.userModel.updateOne(
@@ -168,15 +153,15 @@ export class UsersService {
                     },
                 },
             },
-        );
+        )
 
-        await this.userModel.softDelete({ _id: id });
+        await this.userModel.softDelete({ _id: id })
     }
 
     async findAll(page: number, pageSize: number) {
-        const defaultPage = page ? Number(page) : 1;
-        const defaultPageSize = pageSize ? Number(pageSize) : 10;
-        const skip = (defaultPage - 1) * defaultPageSize;
+        const defaultPage = page ? Number(page) : 1
+        const defaultPageSize = pageSize ? Number(pageSize) : 10
+        const skip = (defaultPage - 1) * defaultPageSize
 
         const [items, total] = await Promise.all([
             this.userModel
@@ -189,7 +174,7 @@ export class UsersService {
                 .skip(skip)
                 .limit(defaultPageSize),
             this.userModel.countDocuments(),
-        ]);
+        ])
 
         return {
             meta: {
@@ -199,23 +184,19 @@ export class UsersService {
                 total,
             },
             result: items,
-        };
+        }
     }
 
     async findByEmail(email: string) {
-        const user = await this.userModel
-            .findOne({ email })
-            .populate('role', '_id name');
+        const user = await this.userModel.findOne({ email }).populate('role', '_id name')
         if (!user) {
-            throw new NotFoundException(
-                'Người dùng không tồn tại trong hệ thống',
-            );
+            throw new NotFoundException('Người dùng không tồn tại trong hệ thống')
         }
-        return user;
+        return user
     }
 
     async findById(id: string) {
-        await this.checkUserExists(id);
+        await this.checkUserExists(id)
         return await this.userModel
             .findById(id)
             .select('-password')
@@ -223,25 +204,17 @@ export class UsersService {
                 { path: 'role', select: '_id name' },
                 { path: 'companyId', select: '_id name logo' },
             ])
-            .lean();
+            .lean()
     }
 
-    async changePassword(
-        id: Types.ObjectId,
-        changePasswordDto: ChangePasswordDto,
-    ) {
-        const user = await this.userModel
-            .findById(id)
-            .select('password')
-            .lean();
+    async changePassword(id: Types.ObjectId, changePasswordDto: ChangePasswordDto) {
+        const user = await this.userModel.findById(id).select('password').lean()
         if (!user) {
-            throw new NotFoundException(
-                'Người dùng không tồn tại trong hệ thống',
-            );
+            throw new NotFoundException('Người dùng không tồn tại trong hệ thống')
         }
 
         if (!compareSync(changePasswordDto.currentPassword, user.password)) {
-            throw new BadRequestException('Mật khẩu hiện tại không đúng');
+            throw new BadRequestException('Mật khẩu hiện tại không đúng')
         }
 
         await this.userModel.updateOne(
@@ -251,20 +224,18 @@ export class UsersService {
                     password: this.hashPassword(changePasswordDto.newPassword),
                 },
             },
-        );
+        )
     }
 
     async updateTokenUser(_id: Types.ObjectId, refreshToken: string) {
-        return await this.userModel.updateOne({ _id }, { refreshToken });
+        return await this.userModel.updateOne({ _id }, { refreshToken })
     }
 
     async findUserByToken(refreshToken: string) {
-        return await this.userModel
-            .findOne({ refreshToken })
-            .populate('role', 'name');
+        return await this.userModel.findOne({ refreshToken }).populate('role', 'name')
     }
 
     async logout(_id: Types.ObjectId) {
-        return await this.userModel.updateOne({ _id }, { refreshToken: null });
+        return await this.userModel.updateOne({ _id }, { refreshToken: null })
     }
 }

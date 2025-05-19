@@ -1,14 +1,14 @@
-import { Model } from 'mongoose';
-import { Cron } from '@nestjs/schedule';
-import { ApiTags } from '@nestjs/swagger';
-import { InjectModel } from '@nestjs/mongoose';
-import { Controller, Post } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import { Model } from 'mongoose'
+import { Cron } from '@nestjs/schedule'
+import { ApiTags } from '@nestjs/swagger'
+import { InjectModel } from '@nestjs/mongoose'
+import { Controller, Post } from '@nestjs/common'
+import { MailerService } from '@nestjs-modules/mailer'
 
-import { convertSlug } from '@/utils';
-import { ResponseMessage } from '@/decorator/customize.decorator';
-import { JobDocument, JobModel } from '@/jobs/schemas/job.schema';
-import { SubscribersService } from '@/subscribers/subscribers.service';
+import { convertSlug } from '@/utils'
+import { ResponseMessage } from '@/decorator/customize.decorator'
+import { JobDocument, JobModel } from '@/jobs/schemas/job.schema'
+import { SubscribersService } from '@/subscribers/subscribers.service'
 
 @ApiTags('Mail')
 @Controller('mail')
@@ -25,7 +25,7 @@ export class MailController {
     @Cron('0 0 8 * * *')
     async handleSendEmail() {
         try {
-            const subscribers = await this.subscriberService.findAll();
+            const subscribers = await this.subscriberService.findAll()
             for (const subscriber of subscribers) {
                 const condition = {
                     $and: [
@@ -42,16 +42,12 @@ export class MailController {
                             endDate: { $gte: new Date() },
                         },
                     ],
-                };
+                }
 
-                const jobs = await this.jobModel
-                    .find(condition)
-                    .populate('companyId', 'name')
-                    .limit(10)
-                    .lean();
+                const jobs = await this.jobModel.find(condition).populate('companyId', 'name').limit(10).lean()
 
                 const jobsForTemplate = jobs.map((job) => {
-                    const slug = convertSlug(job.name);
+                    const slug = convertSlug(job.name)
                     return {
                         name: job.name,
                         company_name: (job.companyId as any).name,
@@ -59,8 +55,8 @@ export class MailController {
                         locations: job.locations,
                         skills: job.skills,
                         jobUrl: `${process.env.CLIENT_URL}/job/${slug}?id=${job._id}`,
-                    };
-                });
+                    }
+                })
 
                 if (jobsForTemplate.length > 0) {
                     await this.mailerService.sendMail({
@@ -73,11 +69,11 @@ export class MailController {
                             viewAllJobsUrl: `${process.env.CLIENT_URL}/job`,
                             unsubscribeUrl: `${process.env.CLIENT_URL}/unsubscribe`,
                         },
-                    });
+                    })
                 }
             }
         } catch (error) {
-            console.error('Lỗi khi gửi email tự động:', error);
+            console.error('Lỗi khi gửi email tự động:', error)
         }
     }
 }

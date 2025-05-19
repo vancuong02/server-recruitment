@@ -1,8 +1,8 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { CompanyModel } from '@/companies/schemas/company.schema';
+import mongoose, { HydratedDocument } from 'mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { CompanyModel } from '@/companies/schemas/company.schema'
 
-export type JobDocument = HydratedDocument<JobModel>;
+export type JobDocument = HydratedDocument<JobModel>
 
 @Schema({
     timestamps: true,
@@ -10,73 +10,73 @@ export type JobDocument = HydratedDocument<JobModel>;
 })
 export class JobModel {
     @Prop()
-    name: string;
+    name: string
 
     @Prop()
-    skills: string[];
+    skills: string[]
 
     @Prop()
-    locations: string[];
+    locations: string[]
 
     @Prop()
-    levels: string[];
+    levels: string[]
 
     @Prop()
-    typeContracts: string[];
+    typeContracts: string[]
 
     @Prop()
-    typeWorks: string[];
+    typeWorks: string[]
 
     @Prop()
-    salary: string;
+    salary: string
 
     @Prop()
-    quantity: number;
+    quantity: number
 
     @Prop()
-    description: string;
+    description: string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CompanyModel.name })
-    companyId: mongoose.Schema.Types.ObjectId;
+    companyId: mongoose.Schema.Types.ObjectId
 
     @Prop()
-    startDate: Date;
+    startDate: Date
 
     @Prop()
-    endDate: Date;
+    endDate: Date
 
     @Prop()
-    isActive: boolean;
+    isActive: boolean
 
     @Prop()
-    isDeleted: boolean;
+    isDeleted: boolean
 
     @Prop()
-    deletedAt: Date;
+    deletedAt: Date
 
     @Prop({ type: Object })
     createdBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     updatedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop({ type: Object })
     deletedBy: {
-        _id: mongoose.Schema.Types.ObjectId;
-        email: string;
-    };
+        _id: mongoose.Schema.Types.ObjectId
+        email: string
+    }
 
     @Prop()
-    createdAt: Date;
+    createdAt: Date
 
     @Prop()
-    updatedAt: Date;
+    updatedAt: Date
 }
 
-export const JobSchema = SchemaFactory.createForClass(JobModel);
+export const JobSchema = SchemaFactory.createForClass(JobModel)
