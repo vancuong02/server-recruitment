@@ -1,18 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { Types } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose'
-import { genSaltSync, hashSync, compareSync } from 'bcryptjs'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 
 import { Roles } from '@/types'
 import { IUser } from './users.interface'
+import { comparePassword, hashPassword } from '@/utils'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { UserModel, UserDocument } from './schemas/user.schema'
 import { RoleDocument, RoleModel } from '@/roles/schemas/role.schema'
 import { AdminCreateUserDto, CreateUserDto } from './dto/create-user.dto'
 import { AdminUpdateUserDto, UpdateUserDto } from './dto/update-user.dto'
-import { MailerService } from '@nestjs-modules/mailer'
-import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class UsersService {
@@ -22,14 +20,7 @@ export class UsersService {
 
         @InjectModel(RoleModel.name)
         private roleModel: SoftDeleteModel<RoleDocument>,
-
-        private readonly mailerService: MailerService,
-        private configService: ConfigService,
     ) {}
-
-    checkPassword(plain: string, hash: string) {
-        return compareSync(plain, hash)
-    }
 
     private async checkUserExists(id: string) {
         if (!Types.ObjectId.isValid(id)) {
@@ -52,21 +43,17 @@ export class UsersService {
         }
     }
 
-    private hashPassword(password: string) {
-        const salt = genSaltSync(10)
-        return hashSync(password, salt)
-    }
-
     async create(createUserDto: CreateUserDto) {
         await this.checkEmailExists(createUserDto.email)
         const ROLE_USER = Roles.NOMAL_USER
 
         const roleId = (await this.roleModel.findOne({ name: ROLE_USER }))._id
+        const password = await hashPassword(createUserDto.password)
 
         const newUser = await this.userModel.create({
             ...createUserDto,
             role: roleId,
-            password: this.hashPassword(createUserDto.password),
+            password,
         })
 
         return {
@@ -81,9 +68,10 @@ export class UsersService {
         await this.checkEmailExists(createUserDto.email)
 
         const { _id, email } = user
+        const password = await hashPassword(createUserDto.password)
         const newUser = await this.userModel.create({
             ...createUserDto,
-            password: this.hashPassword(createUserDto.password),
+            password,
             createdBy: { _id, email },
         })
 
@@ -213,16 +201,16 @@ export class UsersService {
             throw new NotFoundException('Người dùng không tồn tại trong hệ thống')
         }
 
-        if (!compareSync(changePasswordDto.currentPassword, user.password)) {
+        const checkPassword = await comparePassword(changePasswordDto.currentPassword, user.password)
+        if (!checkPassword) {
             throw new BadRequestException('Mật khẩu hiện tại không đúng')
         }
 
+        const password = await hashPassword(changePasswordDto.newPassword)
         await this.userModel.updateOne(
             { _id: id },
             {
-                $set: {
-                    password: this.hashPassword(changePasswordDto.newPassword),
-                },
+                $set: { password },
             },
         )
     }

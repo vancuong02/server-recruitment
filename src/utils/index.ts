@@ -1,3 +1,5 @@
+import { compare, hash } from 'bcryptjs'
+
 export const nonAccentVietnamese = (str: string) => {
     str = str.replace(/A|Á|À|Ã|Ạ|Â|Ấ|Ầ|Ẫ|Ậ|Ă|Ắ|Ằ|Ẵ|Ặ/g, 'A')
     str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
@@ -39,4 +41,12 @@ export const convertSlug = (str: string) => {
         .replace(/-+/g, '-') // collapse dashes
 
     return str
+}
+
+export const hashPassword = async (password: string): Promise<string> => {
+    return await hash(password, 10)
+}
+
+export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
+    return await compare(password, hash)
 }

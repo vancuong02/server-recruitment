@@ -1,7 +1,7 @@
-import { Body, Get, Post, Req, Res, UseGuards, Controller } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { Throttle } from '@nestjs/throttler'
 import { ApiBody, ApiTags } from '@nestjs/swagger'
+import { Body, Get, Post, Req, Res, UseGuards, Controller } from '@nestjs/common'
 
 import { AuthService } from './auth.service'
 import { IUser } from '@/users/users.interface'

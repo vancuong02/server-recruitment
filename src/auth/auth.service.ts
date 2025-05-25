@@ -4,10 +4,11 @@ import { ConfigService } from '@nestjs/config'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 
 import { TokenPayload } from '@/types'
+import { comparePassword } from '@/utils'
 import { IUser } from '@/users/users.interface'
+import { RolesService } from '@/roles/roles.service'
 import { UsersService } from '@/users/users.service'
 import { CreateUserDto } from '@/users/dto/create-user.dto'
-import { RolesService } from '@/roles/roles.service'
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
             const user = await this.usersService.findByEmail(username)
             if (!user) return null
 
-            const isValid = this.usersService.checkPassword(pass, user.password)
+            const isValid = await comparePassword(pass, user.password)
             if (!isValid) return null
 
             const { password, ...result } = user

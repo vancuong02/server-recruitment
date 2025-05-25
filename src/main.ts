@@ -1,10 +1,11 @@
-import { ValidationPipe, VersioningType, BadRequestException } from '@nestjs/common'
 import helmet from 'helmet'
 import passport from 'passport'
 import cookieParser from 'cookie-parser'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
+import { ValidationPipe, VersioningType, BadRequestException } from '@nestjs/common'
+
 import { AppModule } from './app.module'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
 import { setupSwagger } from './config/swagger.config'
@@ -14,20 +15,20 @@ import { ThrottlerExceptionFilter } from './core/throttler-exception.filter'
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
-    // Config Helmet
+    // config helmet
     app.use(helmet())
 
-    // Config Guard
+    // config guard
     const reflector = app.get(Reflector)
     app.useGlobalGuards(new JwtAuthGuard(reflector))
 
-    // Config Interceptor
+    // config interceptor
     app.useGlobalInterceptors(new TransformInterceptor(reflector))
 
-    // Cogfig ThrottlerGuard
+    // cogfig throttlerGuard
     app.useGlobalFilters(new ThrottlerExceptionFilter())
 
-    // Config Validation
+    // config validation
     app.useGlobalPipes(
         new ValidationPipe({
             exceptionFactory: (errors) => {
@@ -41,31 +42,31 @@ async function bootstrap() {
         }),
     )
 
-    const configService = app.get(ConfigService)
-    const port = configService.get<string>('PORT')
-
     //config cookies
     app.use(cookieParser())
 
     //config passport
     app.use(passport.initialize())
 
-    // Config CORS
+    // config cors
     app.enableCors({
         origin: true,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
     })
 
+    // config prefix api
     app.setGlobalPrefix('api')
     app.enableVersioning({
         type: VersioningType.URI,
         defaultVersion: ['1'],
     })
 
-    // Config Swagger
+    // config swagger
     setupSwagger(app)
 
+    const configService = app.get(ConfigService)
+    const port = configService.get<string>('PORT')
     await app.listen(port)
 }
 bootstrap()
